@@ -267,16 +267,46 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
     { key: "vodovod", name: "Vodovod Water",    Icon: Droplet, tint: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", ring: "rgba(45,45,45,0.28)",   saved: "VW-552-0098",   suggested: 620  },
   ];
 
-  const [step, setStep] = useState<"select" | "input" | "review" | "paid">("select");
+  const [step, setStep] = useState<"select" | "addBiller" | "input" | "review" | "paid">("select");
   const [biller, setBiller] = useState<Biller | null>(null);
   const [ref, setRef] = useState("");
   const [amt, setAmt] = useState("");
   const [scanning, setScanning] = useState(false);
   const [slide, setSlide] = useState(0); // 0..1 for slide-to-pay
   const [dragging, setDragging] = useState(false);
+  const [extraBillers, setExtraBillers] = useState<Biller[]>([]);
+  const [newCat, setNewCat] = useState<"electricity" | "internet" | "water" | "other">("electricity");
+  const [newName, setNewName] = useState("");
+  const [newRef, setNewRef] = useState("");
+
+  const CAT_PRESET: Record<string, { Icon: typeof Zap; tint: string; ring: string; label: string }> = {
+    electricity: { Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)", label: "Electricity" },
+    internet:    { Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",   label: "Internet" },
+    water:       { Icon: Droplet, tint: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", ring: "rgba(45,45,45,0.28)",  label: "Water" },
+    other:       { Icon: Building2, tint: "linear-gradient(135deg,#3a3a3a,#111)", ring: "rgba(0,0,0,0.25)",      label: "Other" },
+  };
+
+  function saveNewBiller() {
+    if (!newName.trim() || !newRef.trim()) { toast("Enter name & reference"); return; }
+    const preset = CAT_PRESET[newCat];
+    const b: Biller = {
+      key: `custom-${Date.now()}`,
+      name: newName.trim(),
+      Icon: preset.Icon,
+      tint: preset.tint,
+      ring: preset.ring,
+      saved: newRef.trim(),
+      suggested: 0,
+    };
+    setExtraBillers((arr) => [...arr, b]);
+    setNewName(""); setNewRef(""); setNewCat("electricity");
+    toast(`✓ ${b.name} saved`);
+    pickBiller(b);
+  }
 
   function reset() {
     setStep("select"); setBiller(null); setRef(""); setAmt("");
+    setNewName(""); setNewRef(""); setNewCat("electricity");
     setScanning(false); setSlide(0); setDragging(false);
   }
   function close() { onClose(); setTimeout(reset, 250); }
@@ -334,6 +364,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
 
   const title =
     step === "select" ? "Pay a Bill" :
+    step === "addBiller" ? "Add a Biller" :
     step === "input"  ? biller?.name ?? "" :
     step === "review" ? "Review Payment" : "";
 
@@ -375,7 +406,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {BILLERS.map((b) => (
+            {[...BILLERS, ...extraBillers].map((b) => (
               <button
                 key={b.key}
                 onClick={() => pickBiller(b)}
@@ -398,7 +429,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
             ))}
             <button
               type="button"
-              onClick={() => toast("Add new biller coming soon")}
+              onClick={() => setStep("addBiller")}
               className="tap group relative flex h-[132px] flex-col justify-between overflow-hidden rounded-3xl border-2 border-dashed border-[var(--iute-text)]/20 bg-transparent p-4 text-left transition hover:border-[var(--iute-red)]/50"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-dashed border-[var(--iute-text)]/30 text-[var(--iute-text-soft)]">
@@ -411,6 +442,67 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
                 </span>
               </span>
             </button>
+          </div>
+        </div>
+      ) : step === "addBiller" ? (
+        <div className="space-y-5">
+          <div>
+            <p className="mb-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Category</p>
+            <div className="grid grid-cols-4 gap-2">
+              {(Object.keys(CAT_PRESET) as Array<keyof typeof CAT_PRESET>).map((k) => {
+                const p = CAT_PRESET[k];
+                const active = newCat === k;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setNewCat(k)}
+                    className={`tap flex flex-col items-center gap-1 rounded-2xl border p-3 text-[11px] font-bold transition ${active ? "border-[var(--iute-red)] bg-[var(--iute-red)]/5 text-[var(--iute-text)]" : "border-[var(--iute-divider)] bg-[var(--iute-surface)] text-[var(--iute-text-soft)]"}`}
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl text-white" style={{ background: p.tint }}>
+                      <p.Icon size={16} />
+                    </span>
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="block">
+            <span className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Biller name</span>
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="e.g. EVN — Apartment 4B"
+              className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] px-4 text-base font-semibold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)]"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Account reference</span>
+            <div className="relative">
+              <input
+                value={newRef}
+                onChange={(e) => setNewRef(e.target.value)}
+                placeholder="100-2034-882"
+                className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] px-4 pr-12 text-base font-semibold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)]"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--iute-text-soft)]">
+                <Camera size={18} />
+              </span>
+            </div>
+          </label>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setStep("select")}
+              className="tap h-12 flex-1 rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] text-sm font-extrabold text-[var(--iute-text)]"
+            >
+              Cancel
+            </button>
+            <PrimaryButton className="!h-12 flex-[2]" onClick={saveNewBiller}>Save biller</PrimaryButton>
           </div>
         </div>
       ) : step === "input" ? (
