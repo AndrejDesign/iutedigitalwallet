@@ -34,10 +34,21 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
     <BottomSheet open={open} onClose={close} title="Add Money">
       <div className="space-y-4">
         {/* Stepper */}
-        <div className="flex gap-1.5">
-          {[1, 2, 3].map((n) => (
-            <span key={n} className={`h-1 flex-1 rounded-full ${step >= n ? "bg-[var(--iute-red)]" : "bg-black/10"}`} />
-          ))}
+        <div className="space-y-1.5">
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map((n) => (
+              <span key={n} className={`h-1 flex-1 rounded-full ${step >= n ? "bg-[var(--iute-red)]" : "bg-black/10"}`} />
+            ))}
+          </div>
+          <div className="flex justify-between text-[10px] font-bold uppercase tracking-wide">
+            {[
+              { n: 1, label: "Choose Method" },
+              { n: 2, label: "Enter Amount" },
+              { n: 3, label: "Summary" },
+            ].map(({ n, label }) => (
+              <span key={n} className={step >= n ? "text-[var(--iute-red)]" : "text-[var(--iute-text-soft)]"}>{label}</span>
+            ))}
+          </div>
         </div>
 
         {step === 1 && (
@@ -99,23 +110,32 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
         {step === 3 && (
           <>
             <div className="rounded-2xl bg-[var(--iute-parchment)] p-4">
-              <p className="font-mono text-xs font-bold uppercase text-[var(--iute-merlot)]">Summary</p>
-              <p className="mt-2 text-base font-extrabold text-[var(--iute-merlot)]">
+              <p className="font-mono text-xs font-bold uppercase text-[#1A1A1A]/70">Summary</p>
+              <p className="mt-2 text-base font-extrabold text-[#1A1A1A]">
                 Adding: {fmtMKD(+amount)}
               </p>
-              <p className="text-sm font-bold text-[var(--iute-merlot)]/80">via {methodLabel}</p>
-              <p className="mt-3 font-mono text-sm font-bold text-[var(--iute-merlot)]">
-                New balance: {fmtMKD(state.balanceMKD + +amount)}
-              </p>
+              <p className="text-sm font-bold text-[#1A1A1A]/80">via {methodLabel}</p>
+              {method === "bank" ? (
+                <p className="mt-3 text-xs font-bold text-[#1A1A1A]/80 leading-relaxed">
+                  Estimated processing time: 1–2 business days. Balance will update upon clearance.
+                </p>
+              ) : (
+                <p className="mt-3 font-mono text-sm font-bold text-[#1A1A1A]">
+                  New balance: {fmtMKD(state.balanceMKD + +amount)}
+                </p>
+              )}
             </div>
             <PrimaryButton onClick={() => {
-              dispatch({ type: "SET_BALANCE", balance: state.balanceMKD + +amount });
-              toast(`✅ ${fmtMKD(+amount)} added to your wallet!`);
+              if (method !== "bank") {
+                dispatch({ type: "SET_BALANCE", balance: state.balanceMKD + +amount });
+              }
+              toast(method === "bank"
+                ? `✓ ${fmtMKD(+amount)} transfer initiated — clears in 1–2 business days`
+                : `✅ ${fmtMKD(+amount)} added to your wallet!`);
               close();
             }}>
               Confirm & Add Money
             </PrimaryButton>
-            <SecondaryButton onClick={() => setStep(2)}>Back</SecondaryButton>
           </>
         )}
       </div>
