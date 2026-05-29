@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Bell, Moon, Sun, ArrowUpRight, ArrowDownLeft, Building2, Wallet,
+  ArrowUpRight, ArrowDownLeft, Building2, Wallet,
   Lock, ShoppingBag, Loader2, Plus, Send, RefreshCw, Zap, Wifi, Droplet, Flame,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
@@ -45,7 +45,7 @@ export function Home() {
 
   return (
     <div
-      className="min-h-screen bg-[var(--iute-bg)] pb-32 pt-12"
+      className="min-h-screen bg-[var(--iute-bg)] pb-24 pt-2"
       onTouchStart={(e) => setStartY(e.touches[0].clientY)}
       onTouchMove={(e) => {
         if (startY != null && window.scrollY === 0) {
@@ -65,20 +65,9 @@ export function Home() {
         </div>
       )}
 
-      <header className="flex items-center justify-between px-5 pt-2">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Good morning</p>
-          <h1 className="text-xl font-extrabold text-[var(--iute-text)]">My Wallet — Anja 👋</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <button aria-label="Notifications" className="tap relative rounded-2xl bg-[var(--iute-surface)] p-2.5">
-            <Bell size={20} className="text-[var(--iute-text)]" />
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold text-white">3</span>
-          </button>
-          <button onClick={() => dispatch({ type: "TOGGLE_DARK" })} aria-label={state.dark ? "Switch to light mode" : "Switch to dark mode"} className="tap rounded-2xl bg-[var(--iute-surface)] p-2.5">
-            {state.dark ? <Sun size={20} className="text-[var(--iute-text)]" /> : <Moon size={20} className="text-[var(--iute-text)]" />}
-          </button>
-        </div>
+      <header className="px-5 pt-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Good morning</p>
+        <h1 className="text-xl font-extrabold text-[var(--iute-text)]">My Wallet — Anja 👋</h1>
       </header>
 
       {/* Hero balance */}
