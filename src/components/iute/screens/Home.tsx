@@ -513,8 +513,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
             Choose another biller
           </button>
         </div>
-      ) : (
-        // review
+      ) : step === "review" ? (
         <div className="space-y-4">
           <div
             className="relative overflow-hidden rounded-3xl p-5 text-white"
@@ -574,7 +573,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
             Edit details
           </button>
         </div>
-      )}
+      ) : null}
 
       {step === "add" && (
         <div className="space-y-4">
