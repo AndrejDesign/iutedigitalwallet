@@ -36,8 +36,8 @@ export function Squad() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-6">
-      <header className="mb-4 flex items-center justify-between px-1">
+    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-12">
+      <header className="mb-4 flex items-center justify-between px-1 pt-2">
         <h1 className="text-3xl font-extrabold text-[var(--iute-text)]">Squad Hub</h1>
         <span className="rounded-full bg-[var(--iute-parchment)] px-3 py-1.5 text-xs font-bold text-[var(--iute-black)]">
           {state.iutePoints.toLocaleString()} pts

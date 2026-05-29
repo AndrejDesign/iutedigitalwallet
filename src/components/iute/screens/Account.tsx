@@ -26,7 +26,7 @@ export function Account() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-6">
+    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-12">
       <div className="overflow-hidden rounded-3xl bg-[var(--iute-red)] p-5 text-white">
         <div className="flex items-center gap-4">
           <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--iute-merlot)] text-2xl font-extrabold">AA</span>
