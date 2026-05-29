@@ -35,11 +35,11 @@ export function BottomNav() {
       <div className="pointer-events-auto relative mx-auto w-full max-w-[390px] px-3 pb-3">
         <div className="relative flex h-16 items-center rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)]/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           {/* Left side */}
-          <div className="flex flex-1 items-center" style={{ paddingRight: 60 }}>
+          <div className="flex flex-1 items-center" style={{ paddingLeft: 12, paddingRight: 52 }}>
             {LEFT.map((t) => <Tab key={t.key} tabKey={t.key} label={t.label} Icon={t.Icon} />)}
           </div>
           {/* Right side */}
-          <div className="flex flex-1 items-center" style={{ paddingLeft: 60 }}>
+          <div className="flex flex-1 items-center" style={{ paddingLeft: 52, paddingRight: 12 }}>
             {RIGHT.map((t) => <Tab key={t.key} tabKey={t.key} label={t.label} Icon={t.Icon} />)}
           </div>
           {/* Center QR */}

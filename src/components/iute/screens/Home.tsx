@@ -1,12 +1,11 @@
 import { useState } from "react";
 import {
   Bell, Moon, Sun, ArrowUpRight, ArrowDownLeft, Building2, Wallet,
-  Lock, ShoppingBag, Loader2, Plus, Send,
+  Lock, ShoppingBag, Loader2, Plus, Send, RefreshCw, Zap, Wifi, Droplet, Flame,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
 import { Card, BottomSheet, PrimaryButton } from "../ui";
 import { TRANSACTIONS } from "../mockData";
-import { FxHub } from "../flows/FxHub";
 import { AddMoneySheet, SendMoneySheet, RequestMoneySheet } from "../flows/MoneyFlows";
 
 export function Home() {
@@ -15,11 +14,19 @@ export function Home() {
   const [addOpen, setAddOpen] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [payBillOpen, setPayBillOpen] = useState(false);
+  const [swapAmt, setSwapAmt] = useState("1230");
+  const [spinning, setSpinning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
   const [startY, setStartY] = useState<number | null>(null);
 
   const mkdToEur = (state.balanceMKD / state.rate).toFixed(2);
+
+  function onSwap() {
+    setSpinning(true);
+    setTimeout(() => setSpinning(false), 600);
+  }
 
   function onRefresh() {
     if (refreshing) return;
@@ -101,7 +108,7 @@ export function Home() {
         {[
           { Icon: ArrowUpRight, label: "Send",    onClick: () => setSendOpen(true) },
           { Icon: ArrowDownLeft, label: "Request", onClick: () => setRequestOpen(true) },
-          { Icon: Building2,    label: "Pay Bill", onClick: () => toast("Pay Bill coming next…") },
+          { Icon: Building2,    label: "Pay Bill", onClick: () => setPayBillOpen(true) },
           { Icon: Wallet,       label: "Top Up",   onClick: () => setAddOpen(true) },
         ].map(({ Icon, label, onClick }) => (
           <button key={label} className="tap flex min-h-[48px] flex-col items-center gap-2" onClick={onClick} aria-label={label}>
@@ -115,7 +122,31 @@ export function Home() {
 
       {/* Bento grid */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
-        <FxHub />
+        <Card className="col-span-2">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Instant Swap</p>
+            <span className="font-mono text-[11px] font-bold text-[var(--iute-text-soft)]">1 EUR = {state.rate} ден</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 rounded-2xl bg-[var(--iute-fog)] p-3">
+              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">MKD</p>
+              <input
+                value={swapAmt}
+                onChange={(e) => setSwapAmt(e.target.value.replace(/[^\d.]/g, ""))}
+                className="w-full bg-transparent font-mono text-xl font-extrabold text-[var(--iute-text)] outline-none"
+              />
+            </div>
+            <button onClick={onSwap} aria-label="Refresh rate" className="tap flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--iute-red)] text-white">
+              <RefreshCw size={20} className={spinning ? "animate-spin" : ""} />
+            </button>
+            <div className="flex-1 rounded-2xl bg-[var(--iute-cloud)] p-3">
+              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">EUR</p>
+              <p className="font-mono text-xl font-extrabold text-[var(--iute-text)]">
+                {(((+swapAmt || 0) / state.rate) || 0).toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </Card>
 
         <Card>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">iutePlus</p>
@@ -208,7 +239,72 @@ export function Home() {
       <AddMoneySheet open={addOpen} onClose={() => setAddOpen(false)} />
       <SendMoneySheet open={sendOpen} onClose={() => setSendOpen(false)} />
       <RequestMoneySheet open={requestOpen} onClose={() => setRequestOpen(false)} />
+      <PayBillSheet open={payBillOpen} onClose={() => setPayBillOpen(false)} />
     </div>
+  );
+}
+
+function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { state, dispatch, toast } = useStore();
+  const [biller, setBiller] = useState<null | { name: string; Icon: typeof Zap; color: string }>(null);
+  const [ref, setRef] = useState("");
+  const [amt, setAmt] = useState("");
+  const [paid, setPaid] = useState(false);
+
+  const BILLERS = [
+    { name: "EVN Electricity", Icon: Zap,    color: "#F59E0B" },
+    { name: "Telekom Internet", Icon: Wifi,  color: "#3B82F6" },
+    { name: "Vodovod Water",    Icon: Droplet, color: "#0EA5E9" },
+    { name: "Makpetrol Gas",    Icon: Flame, color: "#EF4444" },
+  ];
+
+  function reset() { setBiller(null); setRef(""); setAmt(""); setPaid(false); }
+  function close() { onClose(); setTimeout(reset, 250); }
+
+  function pay() {
+    const n = +amt || 0;
+    if (!n || n > state.balanceMKD) { toast("Invalid amount"); return; }
+    dispatch({ type: "SET_BALANCE", balance: state.balanceMKD - n });
+    setPaid(true);
+    toast(`✓ Paid ${fmtMKD(n)} to ${biller?.name}`);
+    setTimeout(close, 1200);
+  }
+
+  return (
+    <BottomSheet open={open} onClose={close} title={biller ? biller.name : "Pay a Bill"}>
+      {paid ? (
+        <div className="py-8 text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white text-4xl">✓</div>
+          <p className="mt-4 text-lg font-extrabold text-[var(--iute-text)]">Payment Sent</p>
+          <p className="text-sm font-medium text-[var(--iute-text-soft)]">{biller?.name}</p>
+        </div>
+      ) : !biller ? (
+        <div className="grid grid-cols-2 gap-3">
+          {BILLERS.map((b) => (
+            <button key={b.name} onClick={() => setBiller(b)} className="tap flex flex-col items-start gap-3 rounded-2xl bg-[var(--iute-fog)] p-4 text-left hover:ring-2 hover:ring-[var(--iute-red)]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ background: b.color }}>
+                <b.Icon size={20} />
+              </span>
+              <span className="text-sm font-extrabold text-[var(--iute-text)]">{b.name}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <label className="block">
+            <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Customer Reference</span>
+            <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="e.g. 100-2034-882" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Amount (MKD)</span>
+            <input value={amt} onChange={(e) => setAmt(e.target.value.replace(/[^\d.]/g, ""))} inputMode="decimal" placeholder="0.00" className="h-14 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-2xl font-extrabold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+          </label>
+          <p className="text-[11px] font-bold text-[var(--iute-text-soft)]">Balance: {fmtMKD(state.balanceMKD)}</p>
+          <PrimaryButton disabled={!ref || !amt} onClick={pay}>Pay Now</PrimaryButton>
+          <button onClick={() => setBiller(null)} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">Back</button>
+        </div>
+      )}
+    </BottomSheet>
   );
 }
 
