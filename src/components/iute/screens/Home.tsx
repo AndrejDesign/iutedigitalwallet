@@ -279,7 +279,8 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const [newName, setNewName] = useState("");
   const [newRef, setNewRef] = useState("");
 
-  const CAT_PRESET: Record<string, { Icon: typeof Zap; tint: string; ring: string; label: string }> = {
+  type CatKey = "electricity" | "internet" | "water" | "other";
+  const CAT_PRESET: Record<CatKey, { Icon: typeof Zap; tint: string; ring: string; label: string }> = {
     electricity: { Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)", label: "Electricity" },
     internet:    { Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",   label: "Internet" },
     water:       { Icon: Droplet, tint: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", ring: "rgba(45,45,45,0.28)",  label: "Water" },
