@@ -76,16 +76,27 @@ export function Home() {
 
       {/* Hero balance */}
       <div className="px-4 pt-5">
-        <div className="relative overflow-hidden rounded-3xl bg-[var(--iute-red)] p-5 text-white shadow-[0_20px_40px_-15px_rgba(216,37,44,0.55)]">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-black/10" />
-          <div className="relative">
-            <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-80">Total Balance</p>
-            <p className="mt-2 font-mono text-[36px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
-            <p className="mt-1 text-sm font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
-            <button onClick={() => setKycOpen(true)} className="tap absolute right-0 top-0 rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
-              Level {state.tier} ●
-            </button>
+        <div className="relative overflow-hidden rounded-3xl bg-[var(--iute-red)] p-6 text-white shadow-[0_20px_40px_-15px_rgba(216,37,44,0.55)]" style={{ minHeight: 200 }}>
+          <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10" />
+          <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-black/10" />
+          <div className="pointer-events-none absolute right-10 bottom-0 h-24 w-24 rounded-full bg-white/5" />
+          <div className="relative flex h-full flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-80">Total Balance</p>
+                <p className="mt-3 font-mono text-[40px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
+                <p className="mt-2 text-base font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
+              </div>
+              <button onClick={() => setKycOpen(true)} className="tap rounded-xl bg-white/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
+                Level {state.tier} ●
+              </button>
+            </div>
+            <div className="mt-6 flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white">
+                <Wallet size={14} strokeWidth={2.4} />
+              </span>
+              <span className="text-[11px] font-semibold opacity-70">Available for instant transfer</span>
+            </div>
           </div>
         </div>
       </div>
