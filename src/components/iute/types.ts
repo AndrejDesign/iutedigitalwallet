@@ -24,7 +24,6 @@ export interface Txn {
 }
 
 export interface AppState {
-  dark: boolean;
   screen: ScreenKey;
   tier: Tier;
   balanceMKD: number;
@@ -36,4 +35,14 @@ export interface AppState {
   streakDays: number;
   selectedTxn: Txn | null;
   toast: string | null;
+  notifications: Notification[];
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  when: string;
+  icon: "money" | "card" | "squad" | "promo" | "alert";
+  read: boolean;
 }
