@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Building2, CreditCard as CCIcon, Users, Landmark, Search, Plus,
-  Check, Link2, QrCode, MessageSquare, ChevronDown,
+  Check, Link2, QrCode, MessageSquare, ChevronDown, UserPlus, ArrowLeft,
 } from "lucide-react";
 import { BottomSheet, PrimaryButton, SecondaryButton } from "../ui";
 import { useStore, fmtMKD } from "../store";
@@ -136,16 +136,49 @@ export function SendMoneySheet({ open, onClose }: { open: boolean; onClose: () =
   const [ccy, setCcy] = useState<FxCode>("MKD");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
+  const [extras, setExtras] = useState<Contact[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newCcy, setNewCcy] = useState<Contact["currency"]>("MKD");
 
-  function reset() { setStep(1); setRecipient(null); setQ(""); setCcy("MKD"); setAmount(""); setNote(""); }
+  const NEW_COLORS = ["#D8252C", "#5A0917", "#C9A84C", "#2D8A9E", "#E85D3A", "#4F46E5", "#0D7A5F"];
+
+  function reset() {
+    setStep(1); setRecipient(null); setQ(""); setCcy("MKD"); setAmount(""); setNote("");
+    setAdding(false); setNewName(""); setNewPhone(""); setNewCcy("MKD");
+  }
   function close() { onClose(); setTimeout(reset, 250); }
 
-  const filtered = CONTACTS.filter((c) => !q || c.name.toLowerCase().includes(q.toLowerCase()) || c.phone.includes(q));
+  const allContacts = useMemo(() => [...extras, ...CONTACTS], [extras]);
+  const filtered = allContacts.filter((c) => !q || c.name.toLowerCase().includes(q.toLowerCase()) || c.phone.includes(q));
   const eqMKD = useMemo(() => ccy === "MKD" ? +amount : (+amount / FX_RATES[ccy]), [ccy, amount]);
+
+  function saveNewRecipient() {
+    const cleanPhone = newPhone.replace(/\s/g, "");
+    if (!newName.trim() || cleanPhone.length < 6) {
+      toast("Enter a name and valid phone");
+      return;
+    }
+    const c: Contact = {
+      id: `new-${Date.now()}`,
+      name: newName.trim(),
+      phone: cleanPhone.startsWith("+") ? cleanPhone : `+389 ${cleanPhone}`,
+      color: NEW_COLORS[(extras.length + CONTACTS.length) % NEW_COLORS.length],
+      flag: "🇲🇰",
+      currency: newCcy,
+    };
+    setExtras((prev) => [c, ...prev]);
+    setAdding(false);
+    setNewName(""); setNewPhone(""); setNewCcy("MKD");
+    setRecipient(c);
+    setStep(2);
+    toast(`✓ ${c.name} added to recipients`);
+  }
 
   return (
     <BottomSheet open={open} onClose={close} title="Send Money">
-      {step === 1 && (
+      {step === 1 && !adding && (
         <div className="space-y-4">
           <div className="flex h-12 items-center gap-2 rounded-2xl bg-[var(--iute-fog)] px-4">
             <Search size={18} className="text-[var(--iute-text-soft)]" />
@@ -164,9 +197,61 @@ export function SendMoneySheet({ open, onClose }: { open: boolean; onClose: () =
               ))}
             </div>
           </div>
-          <button onClick={() => toast("New recipient flow coming…")} className="tap flex w-full items-center gap-2 rounded-2xl bg-[var(--iute-fog)] p-3 text-sm font-bold text-[var(--iute-red)]">
+          <button onClick={() => setAdding(true)} className="tap flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--iute-red)]/40 bg-[var(--iute-red)]/5 p-3 text-sm font-extrabold text-[var(--iute-red)]">
             <Plus size={18} /> Add New Recipient
           </button>
+        </div>
+      )}
+
+      {step === 1 && adding && (
+        <div className="space-y-4">
+          <button onClick={() => setAdding(false)} className="tap flex items-center gap-1 text-xs font-bold text-[var(--iute-text-soft)]">
+            <ArrowLeft size={14} /> Back to contacts
+          </button>
+          <div className="flex items-center gap-3 rounded-2xl bg-[var(--iute-parchment)] p-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--iute-red)] text-white">
+              <UserPlus size={22} />
+            </span>
+            <div>
+              <p className="text-sm font-extrabold text-[var(--iute-merlot)]">New Recipient</p>
+              <p className="text-xs font-bold text-[var(--iute-merlot)]/70">Saved for future transfers</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Full Name</label>
+            <input
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="e.g. Ana Petrova"
+              className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Phone Number</label>
+            <div className="flex h-12 items-center rounded-2xl bg-[var(--iute-fog)] px-4 focus-within:ring-2 focus-within:ring-[var(--iute-red)]">
+              <span className="mr-2 font-mono text-sm font-extrabold text-[var(--iute-text-soft)]">+389</span>
+              <input
+                inputMode="tel"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value.replace(/[^\d\s]/g, ""))}
+                placeholder="70 123 456"
+                className="flex-1 bg-transparent text-sm font-bold text-[var(--iute-text)] outline-none"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Default Currency</label>
+            <div className="grid grid-cols-4 gap-2">
+              {SEND_CCY.map((c) => (
+                <button key={c} onClick={() => setNewCcy(c as Contact["currency"])} className={`tap rounded-full px-3 py-2 text-xs font-bold ${newCcy === c ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+          <PrimaryButton onClick={saveNewRecipient}>Save & Continue</PrimaryButton>
+          <SecondaryButton onClick={() => setAdding(false)}>Cancel</SecondaryButton>
         </div>
       )}
 
