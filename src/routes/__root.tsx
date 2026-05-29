@@ -75,11 +75,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "MyIute Pay — Social-first Digital Wallet" },
       { name: "description", content: "MyIute Pay prototype: Gen-Z digital wallet for North Macedonia." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "MyIute Pay" },
-      { property: "og:description", content: "Social-first digital wallet for Gen Z in North Macedonia." },
+      { property: "og:title", content: "MyIute Pay — Social-first Digital Wallet" },
+      { property: "og:description", content: "MyIute Pay prototype: Gen-Z digital wallet for North Macedonia." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "MyIute Pay — Social-first Digital Wallet" },
+      { name: "twitter:description", content: "MyIute Pay prototype: Gen-Z digital wallet for North Macedonia." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/TXrERg8pmNOVJvdYInfB93hDZhC3/social-images/social-1780092540598-Slide_1.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/TXrERg8pmNOVJvdYInfB93hDZhC3/social-images/social-1780092540598-Slide_1.webp" },
     ],
     links: [
       {
