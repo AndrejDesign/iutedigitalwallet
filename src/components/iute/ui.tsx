@@ -21,7 +21,7 @@ export function PrimaryButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`tap h-14 w-full rounded-3xl bg-[var(--iute-red)] text-white font-bold text-base ${disabled ? "opacity-50" : ""} ${className}`}
+      className={`tap h-14 w-full rounded-3xl font-bold text-base ${disabled ? "bg-[var(--iute-fog)] text-[var(--iute-text-soft)] cursor-not-allowed" : "bg-[var(--iute-red)] text-white"} ${className}`}
     >
       {children}
     </button>
