@@ -7,6 +7,7 @@ import { useStore, fmtMKD, fmtEUR } from "../store";
 import { Card, BottomSheet, PrimaryButton } from "../ui";
 import { TRANSACTIONS } from "../mockData";
 import { AddMoneySheet, SendMoneySheet, RequestMoneySheet } from "../flows/MoneyFlows";
+import { RedeemSheet } from "../flows/RedeemSheet";
 
 export function Home() {
   const { state, dispatch, toast, go } = useStore();
@@ -15,6 +16,7 @@ export function Home() {
   const [sendOpen, setSendOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [payBillOpen, setPayBillOpen] = useState(false);
+  const [redeemOpen, setRedeemOpen] = useState(false);
   const [swapAmt, setSwapAmt] = useState("1230");
   const [spinning, setSpinning] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -152,7 +154,7 @@ export function Home() {
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">iutePlus</p>
           <p className="mt-2 font-mono text-3xl font-extrabold text-[var(--iute-red)]">{state.iutePoints.toLocaleString()}</p>
           <p className="text-xs font-medium text-[var(--iute-text-soft)]">loyalty points</p>
-          <button onClick={() => toast("Redeem flow coming…")} className="tap mt-3 text-sm font-bold text-[var(--iute-red)]">Redeem →</button>
+          <button onClick={() => setRedeemOpen(true)} className="tap mt-3 text-sm font-bold text-[var(--iute-red)]">Redeem →</button>
         </Card>
 
         <Card className="relative overflow-hidden">
@@ -239,6 +241,7 @@ export function Home() {
       <AddMoneySheet open={addOpen} onClose={() => setAddOpen(false)} />
       <SendMoneySheet open={sendOpen} onClose={() => setSendOpen(false)} />
       <RequestMoneySheet open={requestOpen} onClose={() => setRequestOpen(false)} />
+      <RedeemSheet open={redeemOpen} onClose={() => setRedeemOpen(false)} />
       <PayBillSheet open={payBillOpen} onClose={() => setPayBillOpen(false)} />
     </div>
   );

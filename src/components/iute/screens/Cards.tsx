@@ -100,20 +100,10 @@ export function Cards() {
           <p className="text-[11px] font-medium text-[var(--iute-text-soft)]">This Month</p>
           <p className="mt-1 text-[11px] font-medium text-[var(--iute-text-soft)]">Avg: 541 ден each</p>
         </Card>
-        <Card className="col-span-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Spending by Category</p>
-          <div className="mt-3 space-y-2">
-            {CARD_CATEGORIES.map((c) => (
-              <div key={c.label} className="flex items-center gap-3">
-                <span className="w-24 text-xs font-bold text-[var(--iute-text)]">{c.icon} {c.label}</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--iute-fog)]">
-                  <div className="h-full rounded-full bg-[var(--iute-red)]" style={{ width: `${c.pct}%` }} />
-                </div>
-                <span className="w-16 text-right font-mono text-[11px] font-bold text-[var(--iute-text)]">{c.amount.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div className="col-span-2">
+          <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Spending by Category</p>
+          <CategoryBento />
+        </div>
       </div>
 
       {/* AI Insight */}
@@ -238,5 +228,59 @@ function TypeOption({ Icon, label, sub, onClick }: { Icon: typeof Plus; label: s
         <p className="text-[11px] font-medium text-[var(--iute-text-soft)]">{sub}</p>
       </div>
     </button>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* CATEGORY BENTO                                                             */
+/* -------------------------------------------------------------------------- */
+function CategoryBento() {
+  const [active, setActive] = useState<string | null>(null);
+  const total = CARD_CATEGORIES.reduce((s, c) => s + c.amount, 0);
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {CARD_CATEGORIES.map((c) => {
+        const pct = Math.round((c.amount / total) * 100);
+        const isActive = active === c.label;
+        return (
+          <button
+            key={c.label}
+            onClick={() => setActive(isActive ? null : c.label)}
+            className={`tap relative overflow-hidden rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-[var(--iute-divider)] transition-transform duration-200 dark:bg-[var(--iute-surface)] ${isActive ? "scale-[1.02]" : "hover:scale-[1.02]"}`}
+            style={{ borderTop: `3px solid ${c.color}` }}
+          >
+            {c.badge && (
+              <span
+                className="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[9px] font-extrabold text-white shadow"
+                style={{ background: c.color }}
+              >
+                {c.badge}
+              </span>
+            )}
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-lg"
+              style={{ background: `${c.color}22`, color: c.color }}
+            >
+              {c.icon}
+            </span>
+            <p className="mt-2 text-xs font-extrabold text-[var(--iute-text)]">{c.label}</p>
+            <p className="font-mono text-base font-extrabold" style={{ color: c.color }}>
+              {c.amount.toLocaleString()} <span className="text-[10px] opacity-70">ден</span>
+            </p>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--iute-fog)]">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${pct}%`, background: c.color }}
+              />
+            </div>
+            {isActive && (
+              <p className="mt-1 font-mono text-[10px] font-bold" style={{ color: c.color }}>
+                {pct}% of total
+              </p>
+            )}
+          </button>
+        );
+      })}
+    </div>
   );
 }

@@ -69,8 +69,16 @@ export const CARD_INSIGHTS = [
 ];
 
 export const CARD_CATEGORIES = [
-  { icon: "🛒", label: "Shopping",      amount: 4200, pct: 80 },
-  { icon: "☕", label: "Food & Drink",  amount: 3100, pct: 60 },
-  { icon: "🎵", label: "Entertainment", amount: 1450, pct: 30 },
-  { icon: "💳", label: "Transfers",     amount:  980, pct: 20 },
+  { icon: "🛒", label: "Shopping",      amount: 4200, color: "#FF6A00", badge: "🔥 Splurging" }, // EVN orange
+  { icon: "☕", label: "Food & Drink",  amount: 3100, color: "#E63946" },                          // Makpetrol coral
+  { icon: "🎵", label: "Entertainment", amount: 1450, color: "#0066B3" },                          // Telekom blue
+  { icon: "💳", label: "Transfers",     amount:  980, color: "#22B8CF", badge: "💸 Minimal" },     // Vodovod cyan
+];
+
+export const PARTNER_VOUCHERS = [
+  { id: "espresso", name: "Free Espresso", partner: "Skopje Coffee Lab", cost: 300, emoji: "☕" },
+  { id: "cinema",   name: "Cinema Ticket", partner: "Kino Frosina",     cost: 800, emoji: "🎬" },
+  { id: "wolt",     name: "200 ден Wolt Credit", partner: "Wolt",       cost: 500, emoji: "🛵" },
+  { id: "tinex",    name: "5% Off Groceries", partner: "Tinex",         cost: 400, emoji: "🛒" },
+  { id: "spotify",  name: "1 Month Spotify",    partner: "Spotify",     cost: 1200, emoji: "🎵" },
 ];
