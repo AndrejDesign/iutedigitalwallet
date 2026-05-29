@@ -62,7 +62,11 @@ export function History() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`tap rounded-full px-3 py-2 text-[11px] font-bold ${filter === f ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}
+            className={`tap rounded-full border px-3 py-2 text-[11px] font-bold transition ${
+              filter === f
+                ? "border-[var(--iute-red)] bg-[var(--iute-red)] text-white shadow-sm"
+                : "border-[var(--iute-text)]/15 bg-[var(--iute-surface)] text-[var(--iute-text)] hover:border-[var(--iute-text)]/30"
+            }`}
           >
             {f}
           </button>
