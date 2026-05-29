@@ -16,7 +16,7 @@ export function Onboarding() {
   const Icon = slide.Icon;
   return (
     <div className="flex h-full flex-col" style={{ background: slide.bg }}>
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-7 pt-8 text-center text-[var(--iute-black)]">
+      <div className="flex flex-1 flex-col items-center gap-6 px-7 pt-16 text-center text-[var(--iute-black)]">
         <div className="spring-in flex h-36 w-36 items-center justify-center rounded-[40px] bg-white shadow-xl">
           <Icon size={56} className="text-[var(--iute-red)]" strokeWidth={2.2} />
         </div>
