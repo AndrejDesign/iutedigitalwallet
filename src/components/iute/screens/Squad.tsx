@@ -235,6 +235,163 @@ export function Squad() {
           <PrimaryButton onClick={() => setCelebrate(false)} className="mt-6">Nice 🔥</PrimaryButton>
         </div>
       </BottomSheet>
+
+      <AddBuddySheet
+        open={buddyOpen}
+        onClose={() => setBuddyOpen(false)}
+        onAdd={addBuddy}
+        existing={[...CONTACTS.map((c) => c.name), ...extraBuddies.map((b) => b.name)]}
+      />
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* COMPARED-TO-FRIENDS BENTO TILE                                             */
+/* -------------------------------------------------------------------------- */
+function BentoStat({
+  Icon, color, label, mine, friend, delta, unit, custom,
+}: {
+  Icon: typeof Flame; color: string; label: string;
+  mine: string; friend: string; delta: number; unit?: string; custom?: string;
+}) {
+  const positive = delta >= 0;
+  return (
+    <div
+      className="relative overflow-hidden rounded-2xl bg-[var(--iute-surface)] p-3 shadow-sm ring-1 ring-[var(--iute-divider)]"
+      style={{ borderTop: `3px solid ${color}` }}
+    >
+      <div className="flex items-center justify-between">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${color}22`, color }}>
+          <Icon size={18} />
+        </span>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${positive ? "bg-emerald-500/15 text-emerald-600" : "bg-[var(--iute-red)]/10 text-[var(--iute-red)]"}`}
+        >
+          {custom ?? `${positive ? "+" : ""}${delta}${unit ?? ""}`}
+        </span>
+      </div>
+      <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">{label}</p>
+      <p className="font-mono text-lg font-extrabold text-[var(--iute-text)]">{mine}</p>
+      <p className="text-[10px] font-medium text-[var(--iute-text-soft)]">vs. {friend}</p>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* ADD BUDDY FLOW                                                             */
+/* -------------------------------------------------------------------------- */
+function AddBuddySheet({
+  open, onClose, onAdd, existing,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (b: { name: string; color: string }) => void;
+  existing: string[];
+}) {
+  const [q, setQ] = useState("");
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [mode, setMode] = useState<"suggest" | "invite">("suggest");
+
+  const suggestions = SUGGESTIONS.filter(
+    (s) => !existing.includes(s.name) && (!q || s.name.toLowerCase().includes(q.toLowerCase()) || s.phone.includes(q)),
+  );
+
+  function invite() {
+    if (!name || !phone) return;
+    onAdd({ name, color: "#D8252C" });
+    setName(""); setPhone(""); setMode("suggest");
+    onClose();
+  }
+
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Add Buddy to Squad">
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-[var(--iute-fog)] p-1">
+          <button
+            onClick={() => setMode("suggest")}
+            className={`tap h-10 rounded-xl text-xs font-extrabold ${mode === "suggest" ? "bg-[var(--iute-red)] text-white" : "text-[var(--iute-text)]"}`}
+          >
+            From Contacts
+          </button>
+          <button
+            onClick={() => setMode("invite")}
+            className={`tap h-10 rounded-xl text-xs font-extrabold ${mode === "invite" ? "bg-[var(--iute-red)] text-white" : "text-[var(--iute-text)]"}`}
+          >
+            Invite by Phone
+          </button>
+        </div>
+
+        {mode === "suggest" && (
+          <>
+            <div className="flex h-12 items-center gap-2 rounded-2xl bg-[var(--iute-fog)] px-4">
+              <Search size={18} className="text-[var(--iute-text-soft)]" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search by name or phone..."
+                className="flex-1 bg-transparent text-sm font-bold text-[var(--iute-text)] outline-none placeholder:text-[var(--iute-text-soft)]"
+              />
+            </div>
+            <div className="space-y-2">
+              {suggestions.length === 0 && (
+                <p className="py-6 text-center text-xs font-bold text-[var(--iute-text-soft)]">
+                  No new contacts. Try inviting by phone.
+                </p>
+              )}
+              {suggestions.map((s) => (
+                <div key={s.id} className="flex items-center gap-3 rounded-2xl bg-[var(--iute-fog)] p-2 pr-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-extrabold text-white" style={{ background: s.color }}>
+                    {s.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-extrabold text-[var(--iute-text)]">{s.name}</p>
+                    <p className="font-mono text-[11px] font-bold text-[var(--iute-text-soft)]">{s.phone}</p>
+                  </div>
+                  <button
+                    onClick={() => onAdd({ name: s.name, color: s.color })}
+                    className="tap inline-flex h-9 items-center gap-1 rounded-full bg-[var(--iute-red)] px-3 text-[11px] font-extrabold text-white"
+                  >
+                    <Check size={14} strokeWidth={3} /> Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {mode === "invite" && (
+          <div className="space-y-3">
+            <label className="block">
+              <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Friend's name</span>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Marko Stojanov"
+                className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Phone number</span>
+              <input
+                value={phone}
+                inputMode="tel"
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+389 7X XXX XXX"
+                className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+              />
+            </label>
+            <div className="rounded-2xl bg-[var(--iute-parchment)] p-3 text-[11px] font-bold text-[var(--iute-merlot)]">
+              🎁 You both earn 500 iutePoints when they join iute Pay.
+            </div>
+            <PrimaryButton disabled={!name || !phone} onClick={invite}>
+              <span className="inline-flex items-center gap-2"><Send size={16} /> Send Invite</span>
+            </PrimaryButton>
+            <SecondaryButton onClick={() => setMode("suggest")}>Back</SecondaryButton>
+          </div>
+        )}
+      </div>
+    </BottomSheet>
   );
 }
