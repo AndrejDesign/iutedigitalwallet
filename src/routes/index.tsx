@@ -1,29 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { IuteApp } from "@/components/iute/IuteApp";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "MyIute Pay — Social-first Wallet" },
+      { name: "description", content: "Interactive prototype of MyIute Pay, a Gen-Z digital wallet for North Macedonia." },
+      { property: "og:title", content: "MyIute Pay" },
+      { property: "og:description", content: "Send cash like a DM. Split bills, build streaks, shake to freeze." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  return <IuteApp />;
 }
