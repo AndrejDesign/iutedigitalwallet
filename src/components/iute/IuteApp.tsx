@@ -24,7 +24,7 @@ function Shell() {
   return (
     <div className="iute-phone relative flex h-full w-full flex-col overflow-hidden bg-[var(--iute-bg)] text-[var(--iute-text)] transition-colors duration-200">
       {showHeader && <GlobalHeader open={notifOpen} setOpen={setNotifOpen} />}
-      <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="no-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden">
       {state.screen === "splash" && <Splash />}
       {state.screen === "onboarding" && <Onboarding />}
       {state.screen === "register" && <Register />}
