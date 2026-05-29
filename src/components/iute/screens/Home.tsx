@@ -83,14 +83,6 @@ export function Home() {
             <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-80">Total Balance</p>
             <p className="mt-2 font-mono text-[36px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
             <p className="mt-1 text-sm font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
-            <div className="mt-5 flex gap-3">
-              <button onClick={() => setAddOpen(true)} className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)] inline-flex items-center justify-center gap-1.5">
-                <Plus size={16} strokeWidth={3} /> Add Money
-              </button>
-              <button onClick={() => setSendOpen(true)} className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)] inline-flex items-center justify-center gap-1.5">
-                <Send size={16} strokeWidth={2.5} /> Send Money
-              </button>
-            </div>
             <button onClick={() => setKycOpen(true)} className="tap absolute right-0 top-0 rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
               Level {state.tier} ●
             </button>
