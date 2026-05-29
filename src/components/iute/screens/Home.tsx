@@ -1,0 +1,245 @@
+import { useState } from "react";
+import {
+  Bell, Moon, Sun, ArrowUpRight, ArrowDownLeft, Building2, Wallet,
+  RefreshCw, Lock, ShoppingBag, Loader2,
+} from "lucide-react";
+import { useStore, fmtMKD, fmtEUR } from "../store";
+import { Card, Chip, BottomSheet, PrimaryButton } from "../ui";
+import { TRANSACTIONS } from "../mockData";
+
+export function Home() {
+  const { state, dispatch, toast, go } = useStore();
+  const [kycOpen, setKycOpen] = useState(false);
+  const [swapAmt, setSwapAmt] = useState("1230");
+  const [spinning, setSpinning] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const [startY, setStartY] = useState<number | null>(null);
+
+  const mkdToEur = (state.balanceMKD / state.rate).toFixed(2);
+
+  function onSwap() {
+    setSpinning(true);
+    setTimeout(() => setSpinning(false), 600);
+  }
+
+  function onRefresh() {
+    if (refreshing) return;
+    setRefreshing(true);
+    setTimeout(() => {
+      const delta = Math.round((Math.random() - 0.5) * 100);
+      dispatch({ type: "SET_BALANCE", balance: Math.max(0, state.balanceMKD + delta) });
+      dispatch({ type: "SET_RATE", rate: +(60 + Math.random() * 3).toFixed(2) });
+      setRefreshing(false);
+      setPullY(0);
+      toast("Balance updated ⚡");
+    }, 1200);
+  }
+
+  return (
+    <div
+      className="min-h-screen bg-[var(--iute-bg)] pb-32"
+      onTouchStart={(e) => setStartY(e.touches[0].clientY)}
+      onTouchMove={(e) => {
+        if (startY != null && window.scrollY === 0) {
+          const dy = e.touches[0].clientY - startY;
+          if (dy > 0) setPullY(Math.min(dy * 0.5, 80));
+        }
+      }}
+      onTouchEnd={() => {
+        if (pullY > 50) onRefresh();
+        else setPullY(0);
+        setStartY(null);
+      }}
+    >
+      {(pullY > 0 || refreshing) && (
+        <div className="flex justify-center pt-4" style={{ height: pullY || 48 }}>
+          <Loader2 className={`text-[var(--iute-red)] ${refreshing ? "animate-spin" : ""}`} size={24} />
+        </div>
+      )}
+
+      <header className="flex items-center justify-between px-5 pt-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Good morning</p>
+          <h1 className="text-xl font-extrabold text-[var(--iute-text)]">Anja 👋</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="tap relative rounded-2xl bg-[var(--iute-surface)] p-2.5">
+            <Bell size={20} className="text-[var(--iute-text)]" />
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold text-white">3</span>
+          </button>
+          <button onClick={() => dispatch({ type: "TOGGLE_DARK" })} className="tap rounded-2xl bg-[var(--iute-surface)] p-2.5">
+            {state.dark ? <Sun size={20} className="text-[var(--iute-text)]" /> : <Moon size={20} className="text-[var(--iute-text)]" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Hero balance */}
+      <div className="px-4 pt-5">
+        <div className="relative overflow-hidden rounded-3xl bg-[var(--iute-red)] p-5 text-white shadow-[0_20px_40px_-15px_rgba(216,37,44,0.55)]">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
+          <div className="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-black/10" />
+          <div className="relative">
+            <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-80">Total Balance</p>
+            <p className="mt-2 font-mono text-[36px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
+            <p className="mt-1 text-sm font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
+            <div className="mt-5 flex gap-3">
+              <button className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)]">+ Add Money</button>
+              <button className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)]">➤ Send Money</button>
+            </div>
+            <button onClick={() => setKycOpen(true)} className="tap absolute right-0 top-0 rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
+              Level {state.tier} ●
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="mx-4 mt-4 grid grid-cols-4 gap-2 rounded-3xl bg-[var(--iute-surface)] p-4">
+        {[
+          { Icon: ArrowUpRight, label: "Send" },
+          { Icon: ArrowDownLeft, label: "Request" },
+          { Icon: Building2, label: "Pay Bill" },
+          { Icon: Wallet, label: "Top Up" },
+        ].map(({ Icon, label }) => (
+          <button key={label} className="tap flex flex-col items-center gap-2" onClick={() => toast(`${label} coming next…`)}>
+            <span className="flex h-[60px] w-[60px] items-center justify-center rounded-2xl bg-[var(--iute-cloud)] text-[var(--iute-red)]">
+              <Icon size={24} strokeWidth={2.4} />
+            </span>
+            <span className="text-[11px] font-bold text-[var(--iute-text)]">{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Bento grid */}
+      <div className="grid grid-cols-2 gap-3 px-4 pt-4">
+        <Card className="col-span-2">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Instant Swap</p>
+            <span className="font-mono text-[11px] font-bold text-[var(--iute-text-soft)]">1 EUR = {state.rate} ден</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 rounded-2xl bg-[var(--iute-fog)] p-3">
+              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">MKD</p>
+              <input
+                value={swapAmt}
+                onChange={(e) => setSwapAmt(e.target.value.replace(/[^\d.]/g, ""))}
+                className="w-full bg-transparent font-mono text-xl font-extrabold text-[var(--iute-text)] outline-none"
+              />
+            </div>
+            <button onClick={onSwap} className="tap flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--iute-red)] text-white">
+              <RefreshCw size={20} className={spinning ? "animate-spin" : ""} />
+            </button>
+            <div className="flex-1 rounded-2xl bg-[var(--iute-cloud)] p-3">
+              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">EUR</p>
+              <p className="font-mono text-xl font-extrabold text-[var(--iute-text)]">
+                {(((+swapAmt || 0) / state.rate) || 0).toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">iutePlus</p>
+          <p className="mt-2 font-mono text-3xl font-extrabold text-[var(--iute-red)]">{state.iutePoints.toLocaleString()}</p>
+          <p className="text-xs font-medium text-[var(--iute-text-soft)]">loyalty points</p>
+          <button onClick={() => toast("Redeem flow coming…")} className="tap mt-3 text-sm font-bold text-[var(--iute-red)]">Redeem →</button>
+        </Card>
+
+        <Card className="relative overflow-hidden">
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Cardless ATM</p>
+          <p className="mt-2 text-lg font-extrabold text-[var(--iute-text)]">Withdraw without a card</p>
+          {state.tier === 1 && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--iute-surface)]/85 backdrop-blur-sm p-3 text-center">
+              <Lock size={20} className="text-[var(--iute-red)]" />
+              <p className="mt-2 text-xs font-bold text-[var(--iute-text)]">Upgrade to Level 2</p>
+              <button onClick={() => setKycOpen(true)} className="tap mt-2 rounded-lg bg-[var(--iute-red)] px-3 py-1 text-[11px] font-bold text-white">Unlock</button>
+            </div>
+          )}
+        </Card>
+
+        <Card className="col-span-2 bg-[var(--iute-parchment)] dark:bg-[var(--iute-merlot)]">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-base font-extrabold text-[var(--iute-text)]">🔥 {state.streakDays}-Day Streak with Marko!</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--iute-text-soft)]">Keep splitting bills to climb tiers.</p>
+            </div>
+            <span className="rounded-lg bg-[var(--iute-red)] px-2 py-1 text-[10px] font-bold uppercase text-white">5% Cashback</span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/10">
+            <div className="h-full rounded-full bg-[var(--iute-red)] transition-all duration-500" style={{ width: `${(state.streakDays / 14) * 100}%` }} />
+          </div>
+          <p className="mt-1 font-mono text-[11px] font-bold text-[var(--iute-text-soft)]">{state.streakDays}/14 days · next reward 10%</p>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card className="mx-4 mt-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-base font-extrabold text-[var(--iute-text)]">Recent Activity</h3>
+          <button onClick={() => go("history")} className="tap text-sm font-bold text-[var(--iute-red)]">See All →</button>
+        </div>
+        <div className="space-y-1">
+          {TRANSACTIONS.slice(0, 3).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { dispatch({ type: "SET_TXN", txn: t }); go("txdetail"); }}
+              className="tap flex w-full items-center gap-3 rounded-2xl py-2"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--iute-fog)]">
+                {t.amount < 0
+                  ? <ArrowUpRight size={16} className="text-[var(--iute-red)]" />
+                  : t.amount > 0
+                    ? <ArrowDownLeft size={16} className="text-emerald-600" />
+                    : <ShoppingBag size={16} className="text-[var(--iute-text-soft)]" />}
+              </span>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-bold text-[var(--iute-text)]">{t.name}</p>
+                <p className="text-[11px] font-medium text-[var(--iute-text-soft)]">{t.category}</p>
+              </div>
+              <div className="text-right">
+                <p className={`font-mono text-sm font-bold ${t.amount < 0 ? "text-[var(--iute-red)]" : "text-emerald-600"}`}>
+                  {t.amount > 0 ? "+" : ""}{t.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-[10px] text-[var(--iute-text-soft)]">{t.when}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {/* KYC sheet */}
+      <BottomSheet open={kycOpen} onClose={() => setKycOpen(false)} title="Unlock Full Access">
+        <div className="space-y-3">
+          <KycStep done step={1} title="Level 1 — Basic Info" sub="Max 15,000 ден · Active" />
+          <KycStep step={2} title="Level 2 — ID Verification" sub="Max 120,000 ден · Cardless ATM · BNPL" current={state.tier === 1} />
+          {state.tier === 1 ? (
+            <PrimaryButton onClick={() => {
+              dispatch({ type: "SET_TIER", tier: 2 });
+              setKycOpen(false);
+              toast("✓ Verification submitted — Level 2 unlocked");
+            }}>Scan Identity Document Now</PrimaryButton>
+          ) : (
+            <div className="rounded-2xl bg-[var(--iute-parchment)] p-3 text-center text-sm font-bold text-[var(--iute-merlot)]">
+              You're at Level 2 — full access unlocked.
+            </div>
+          )}
+        </div>
+      </BottomSheet>
+    </div>
+  );
+}
+
+function KycStep({ step, title, sub, done, current }: { step: number; title: string; sub: string; done?: boolean; current?: boolean }) {
+  return (
+    <div className={`flex items-start gap-3 rounded-2xl border p-3 ${done ? "border-emerald-500/40 bg-emerald-500/5" : current ? "border-[var(--iute-red)]/40 bg-[var(--iute-red)]/5" : "border-[var(--iute-divider)]"}`}>
+      <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${done ? "bg-emerald-500 text-white" : "bg-[var(--iute-red)] text-white"}`}>
+        {done ? "✓" : step}
+      </span>
+      <div>
+        <p className="text-sm font-extrabold text-[var(--iute-text)]">{title}</p>
+        <p className="text-xs font-medium text-[var(--iute-text-soft)]">{sub}</p>
+      </div>
+    </div>
+  );
+}
