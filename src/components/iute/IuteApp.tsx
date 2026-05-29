@@ -48,7 +48,7 @@ export function IuteApp() {
   return (
     <StoreProvider>
       <div className="min-h-screen w-full bg-[var(--iute-black)] py-0 sm:py-6">
-        <div className="relative mx-auto w-full max-w-[390px] overflow-hidden bg-[var(--iute-bg)] sm:min-h-[720px] sm:rounded-[40px] sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] sm:ring-1 sm:ring-white/10">
+        <div className="relative mx-auto w-full max-w-[393px] overflow-hidden bg-[var(--iute-bg)] sm:h-[852px] sm:min-h-[852px] sm:rounded-[47px] sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] sm:ring-1 sm:ring-white/10">
           <Shell />
         </div>
       </div>
