@@ -396,6 +396,21 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
                 </span>
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => toast("Add new biller coming soon")}
+              className="tap group relative flex h-[132px] flex-col justify-between overflow-hidden rounded-3xl border-2 border-dashed border-[var(--iute-text)]/20 bg-transparent p-4 text-left transition hover:border-[var(--iute-red)]/50"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-dashed border-[var(--iute-text)]/30 text-[var(--iute-text-soft)]">
+                <Plus size={22} strokeWidth={2.5} />
+              </span>
+              <span>
+                <span className="block text-sm font-extrabold leading-tight text-[var(--iute-text)]">Add biller</span>
+                <span className="mt-1 block font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--iute-text-soft)]">
+                  Save a new account
+                </span>
+              </span>
+            </button>
           </div>
         </div>
       ) : step === "input" ? (
