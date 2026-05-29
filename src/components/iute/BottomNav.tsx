@@ -31,8 +31,8 @@ function Tab({ tabKey, label, Icon }: { tabKey: ScreenKey; label: string; Icon: 
 export function BottomNav() {
   const { go } = useStore();
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center">
-      <div className="pointer-events-auto relative mx-auto w-full max-w-[390px] px-3 pb-3">
+    <nav className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center">
+      <div className="pointer-events-auto relative mx-auto w-full max-w-[393px] px-3 pb-3">
         <div className="relative flex h-16 items-center rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)]/90 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           {/* Left side */}
           <div className="flex flex-1 items-center" style={{ paddingLeft: 12, paddingRight: 52 }}>
