@@ -136,6 +136,7 @@ export function Cards() {
 /* ADD CARD FLOW                                                              */
 /* -------------------------------------------------------------------------- */
 function AddCardSheet({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: (last4: string) => void }) {
+  const { state } = useStore();
   const [type, setType] = useState<"existing" | "virtual" | "physical" | null>(null);
   const [num, setNum] = useState("");
   const [name, setName] = useState("");
