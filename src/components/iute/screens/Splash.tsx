@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useStore } from "../store";
+import iuteLogo from "@/assets/iute-logo.png";
 
 export function Splash() {
   const { go } = useStore();
@@ -9,11 +10,9 @@ export function Splash() {
   }, [go]);
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-[var(--iute-red)] text-white">
-      <div className="spring-in flex flex-col items-center gap-4">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-[var(--iute-red)] font-extrabold text-3xl shadow-2xl">
-          iP
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight">MyIute Pay — Social-first Wallet</h1>
+      <div className="spring-in flex flex-col items-center gap-5 px-8">
+        <img src={iuteLogo} alt="iute" className="h-auto w-[220px] max-w-[70%]" />
+        <h1 className="sr-only">MyIute Pay — Social-first Wallet</h1>
         <p className="text-sm font-semibold opacity-80">Social-first wallet · Skopje</p>
       </div>
     </div>

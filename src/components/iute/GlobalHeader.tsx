@@ -13,7 +13,7 @@ const ICONS: Record<Notification["icon"], typeof Bell> = {
 };
 
 export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const { state, dispatch, go } = useStore();
+  const { state, dispatch } = useStore();
   const [lang, setLang] = useState<"EN" | "MK">("EN");
   const unread = state.notifications.filter((n) => !n.read).length;
 
@@ -50,13 +50,6 @@ export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: bo
                 {unread}
               </span>
             )}
-          </button>
-          <button
-            onClick={() => go("account")}
-            aria-label="Profile"
-            className="tap flex h-9 w-9 items-center justify-center rounded-full bg-[var(--iute-red)] text-[11px] font-extrabold text-white ring-2 ring-[var(--iute-bg)]"
-          >
-            AA
           </button>
         </div>
       </header>
