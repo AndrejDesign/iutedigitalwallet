@@ -82,8 +82,8 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="-mx-4 overflow-x-auto px-4">
-            <div className="flex gap-3 pb-2">
+          <div>
+            <div className="grid grid-cols-2 gap-3 pb-2">
               {PARTNER_VOUCHERS.map((v) => {
                 const sel = voucher === v.id;
                 const can = v.cost <= state.iutePoints;
@@ -92,7 +92,7 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
                     key={v.id}
                     onClick={() => can && setVoucher(v.id)}
                     disabled={!can}
-                    className={`tap flex w-40 shrink-0 flex-col rounded-2xl p-3 text-left ring-2 transition-all ${sel ? "ring-[var(--iute-red)] bg-[var(--iute-red)]/5" : "ring-[var(--iute-divider)] bg-[var(--iute-fog)]"} ${!can ? "opacity-40" : ""}`}
+                    className={`tap flex flex-col rounded-2xl p-3 text-left ring-2 transition-all ${sel ? "ring-[var(--iute-red)] bg-[var(--iute-red)]/5" : "ring-[var(--iute-divider)] bg-[var(--iute-fog)]"} ${!can ? "opacity-40" : ""}`}
                   >
                     <span className="text-2xl">{v.emoji}</span>
                     <p className="mt-1 text-xs font-extrabold text-[var(--iute-text)]">{v.name}</p>
