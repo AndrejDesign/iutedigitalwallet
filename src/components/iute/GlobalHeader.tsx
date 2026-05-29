@@ -13,7 +13,7 @@ const ICONS: Record<Notification["icon"], typeof Bell> = {
 };
 
 export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const { state, dispatch, go } = useStore();
+  const { state, dispatch } = useStore();
   const [lang, setLang] = useState<"EN" | "MK">("EN");
   const unread = state.notifications.filter((n) => !n.read).length;
 
