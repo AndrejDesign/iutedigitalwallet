@@ -9,23 +9,20 @@ export function Register() {
   const [phone, setPhone] = useState("");
   const [dob, setDob] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [err, setErr] = useState(false);
-  const refs = useRef<(HTMLInputElement | null)[]>([]);
+  const hiddenRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (otpSent) refs.current[0]?.focus();
+    if (otpSent) hiddenRef.current?.focus();
   }, [otpSent]);
 
-  function setDigit(i: number, v: string) {
-    const d = v.replace(/\D/g, "").slice(-1);
-    const next = [...otp];
-    next[i] = d;
-    setOtp(next);
+  function onOtpChange(v: string) {
+    const digits = v.replace(/\D/g, "").slice(0, 4);
+    setOtp(digits);
     setErr(false);
-    if (d && i < 3) refs.current[i + 1]?.focus();
-    if (next.every((x) => x)) {
-      if (next.join("") === "1234") {
+    if (digits.length === 4) {
+      if (digits === "1234") {
         const trimmed = name.trim();
         if (trimmed) dispatch({ type: "SET_USER_NAME", name: trimmed });
         const first = getFirstName(trimmed);
@@ -42,7 +39,7 @@ export function Register() {
     return (
       <div className="flex h-full flex-col bg-[var(--iute-bg)] px-6 pb-6 pt-6">
         <button
-          onClick={() => { setOtpSent(false); setOtp(["", "", "", ""]); setErr(false); }}
+          onClick={() => { setOtpSent(false); setOtp(""); setErr(false); }}
           className="tap -ml-2 flex h-10 w-10 items-center justify-center rounded-full text-[var(--iute-text)] hover:bg-[var(--iute-surface)]"
           aria-label="Back"
         >
@@ -57,20 +54,44 @@ export function Register() {
         </div>
 
         <div className="mt-10">
-          <div className={`flex justify-between gap-3 ${err ? "shake-x" : ""}`}>
-            {otp.map((d, i) => (
-              <input
-                key={i}
-                ref={(el) => { refs.current[i] = el; }}
-                value={d}
-                onChange={(e) => setDigit(i, e.target.value)}
-                inputMode="numeric"
-                maxLength={1}
-                className={`h-16 flex-1 rounded-2xl bg-[var(--iute-surface)] text-center font-mono text-3xl font-bold text-[var(--iute-text)] outline-none ring-1 ${err ? "ring-2 ring-[var(--iute-red)]" : "ring-[var(--iute-divider)] focus:ring-2 focus:ring-[var(--iute-red)]"}`}
-              />
-            ))}
-          </div>
-          {err && <p className="mt-3 text-sm font-bold text-[var(--iute-red)]">Wrong code. Hint: 1234</p>}
+          <button
+            type="button"
+            onClick={() => hiddenRef.current?.focus()}
+            className={`flex w-full items-center justify-center gap-5 ${err ? "shake-x" : ""}`}
+          >
+            {[0, 1, 2, 3].map((i) => {
+              const filled = i < otp.length;
+              const isCursor = i === otp.length;
+              return (
+                <span
+                  key={i}
+                  className={`flex h-14 w-14 items-center justify-center rounded-full ring-2 transition-all duration-150 ${
+                    err
+                      ? "ring-[var(--iute-red)] bg-[var(--iute-red)]/5"
+                      : filled
+                        ? "ring-[var(--iute-red)] bg-[var(--iute-red)]"
+                        : isCursor
+                          ? "ring-[var(--iute-red)] bg-transparent"
+                          : "ring-[var(--iute-divider)] bg-[var(--iute-surface)]"
+                  }`}
+                >
+                  {filled && !err && <span className="h-3.5 w-3.5 rounded-full bg-white" />}
+                  {filled && err && <span className="font-mono text-lg font-bold text-[var(--iute-red)]">{otp[i]}</span>}
+                </span>
+              );
+            })}
+          </button>
+          <input
+            ref={hiddenRef}
+            value={otp}
+            onChange={(e) => onOtpChange(e.target.value)}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={4}
+            aria-label="One-time code"
+            className="sr-only"
+          />
+          {err && <p className="mt-4 text-center text-sm font-bold text-[var(--iute-red)]">Wrong code. Hint: 1234</p>}
         </div>
 
         <button
