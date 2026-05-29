@@ -404,7 +404,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {BILLERS.map((b) => (
+            {billers.slice(0, 4).map((b) => (
               <button
                 key={b.key}
                 onClick={() => pickBiller(b)}
@@ -425,7 +425,29 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
                 </span>
               </button>
             ))}
+            {billers.length < 4 && (
+              <button
+                onClick={openAddBiller}
+                className="tap group relative flex h-[132px] flex-col items-center justify-center gap-2 overflow-hidden rounded-3xl border-2 border-dashed border-[var(--iute-divider)] bg-transparent p-4 text-[var(--iute-text-soft)] transition hover:border-[var(--iute-red)]/40 hover:text-[var(--iute-red)]"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--iute-fog)]">
+                  <Plus size={22} strokeWidth={2.4} />
+                </span>
+                <span className="text-sm font-extrabold">Add Biller</span>
+              </button>
+            )}
           </div>
+
+          {billers.length >= 4 && (
+            <button
+              onClick={openAddBiller}
+              className="tap flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--iute-divider)] bg-transparent px-4 py-3 text-sm font-extrabold text-[var(--iute-text-soft)] transition hover:border-[var(--iute-red)]/40 hover:text-[var(--iute-red)]"
+            >
+              <Plus size={18} strokeWidth={2.4} />
+              Add Biller
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest opacity-70">{billers.length}/5</span>
+            </button>
+          )}
         </div>
       ) : step === "input" ? (
         <div className="space-y-4">
