@@ -35,7 +35,7 @@ export function Register() {
   }
 
   if (otpSent) {
-    const maskedPhone = phone ? `+389 ${phone}` : "your phone";
+    const maskedPhone = phone.trim() || "your phone";
     return (
       <div className="flex h-full flex-col bg-[var(--iute-bg)] px-6 pb-6 pt-6">
         <button
