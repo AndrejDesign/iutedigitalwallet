@@ -260,62 +260,267 @@ export function Home() {
 
 function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, dispatch, toast } = useStore();
-  const [biller, setBiller] = useState<null | { name: string; Icon: typeof Zap; color: string }>(null);
-  const [ref, setRef] = useState("");
-  const [amt, setAmt] = useState("");
-  const [paid, setPaid] = useState(false);
-
-  const BILLERS = [
-    { name: "EVN Electricity",  Icon: Zap,     color: "#D8252C" }, // iute red
-    { name: "Telekom Internet", Icon: Wifi,    color: "#5A0917" }, // iute merlot
-    { name: "Vodovod Water",    Icon: Droplet, color: "#2D2D2D" }, // iute black
-    { name: "Makpetrol Gas",    Icon: Flame,   color: "#C9A84C" }, // parchment gold
+  type Biller = { key: string; name: string; Icon: typeof Zap; tint: string; ring: string; saved: string; suggested: number };
+  const BILLERS: Biller[] = [
+    { key: "evn",     name: "EVN Electricity",  Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)",  saved: "100-2034-882", suggested: 1840 },
+    { key: "telekom", name: "Telekom Internet", Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",    saved: "TEL-77-401-225", suggested: 990  },
+    { key: "vodovod", name: "Vodovod Water",    Icon: Droplet, tint: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", ring: "rgba(45,45,45,0.28)",   saved: "VW-552-0098",   suggested: 620  },
   ];
 
-  function reset() { setBiller(null); setRef(""); setAmt(""); setPaid(false); }
+  const [step, setStep] = useState<"select" | "input" | "review" | "paid">("select");
+  const [biller, setBiller] = useState<Biller | null>(null);
+  const [ref, setRef] = useState("");
+  const [amt, setAmt] = useState("");
+  const [scanning, setScanning] = useState(false);
+  const [slide, setSlide] = useState(0); // 0..1 for slide-to-pay
+  const [dragging, setDragging] = useState(false);
+
+  function reset() {
+    setStep("select"); setBiller(null); setRef(""); setAmt("");
+    setScanning(false); setSlide(0); setDragging(false);
+  }
   function close() { onClose(); setTimeout(reset, 250); }
 
-  function pay() {
+  function pickBiller(b: Biller) {
+    setBiller(b);
+    setRef(b.saved);
+    setAmt(String(b.suggested));
+    setStep("input");
+  }
+
+  function scanWholeBill() {
+    setScanning(true);
+    setTimeout(() => {
+      const b = BILLERS[0];
+      setBiller(b); setRef(b.saved); setAmt(String(b.suggested));
+      setScanning(false); setStep("review");
+      toast("✓ Bill parsed");
+    }, 1100);
+  }
+
+  function scanReference() {
+    setScanning(true);
+    setTimeout(() => {
+      if (biller) setRef(biller.saved);
+      setScanning(false);
+      toast("✓ Reference scanned");
+    }, 900);
+  }
+
+  function commitPayment() {
     const n = +amt || 0;
     if (!n || n > state.balanceMKD) { toast("Invalid amount"); return; }
     dispatch({ type: "SET_BALANCE", balance: state.balanceMKD - n });
-    setPaid(true);
+    setStep("paid");
     toast(`✓ Paid ${fmtMKD(n)} to ${biller?.name}`);
-    setTimeout(close, 1200);
+    setTimeout(close, 1400);
   }
 
+  // Slide-to-pay handlers
+  function onSlideStart() { setDragging(true); }
+  function onSlideMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragging) return;
+    const track = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - track.left - 28; // thumb radius
+    const max = track.width - 56;
+    const pct = Math.max(0, Math.min(1, x / max));
+    setSlide(pct);
+    if (pct >= 0.98) { setDragging(false); setSlide(1); commitPayment(); }
+  }
+  function onSlideEnd() {
+    setDragging(false);
+    if (slide < 0.98) setSlide(0);
+  }
+
+  const title =
+    step === "select" ? "Pay a Bill" :
+    step === "input"  ? biller?.name ?? "" :
+    step === "review" ? "Review Payment" : "";
+
   return (
-    <BottomSheet open={open} onClose={close} title={biller ? biller.name : "Pay a Bill"}>
-      {paid ? (
-        <div className="py-8 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white text-4xl">✓</div>
+    <BottomSheet open={open} onClose={close} title={title}>
+      {step === "paid" ? (
+        <div className="py-10 text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <Check size={36} strokeWidth={3} />
+          </div>
           <p className="mt-4 text-lg font-extrabold text-[var(--iute-text)]">Payment Sent</p>
-          <p className="text-sm font-medium text-[var(--iute-text-soft)]">{biller?.name}</p>
+          <p className="text-sm font-medium text-[var(--iute-text-soft)]">{biller?.name} · {fmtMKD(+amt || 0)}</p>
         </div>
-      ) : !biller ? (
-        <div className="grid grid-cols-2 gap-3">
-          {BILLERS.map((b) => (
-            <button key={b.name} onClick={() => setBiller(b)} className="tap flex flex-col items-start gap-3 rounded-2xl bg-[var(--iute-fog)] p-4 text-left hover:ring-2 hover:ring-[var(--iute-red)]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ background: b.color }}>
-                <b.Icon size={20} />
+      ) : step === "select" ? (
+        <div className="space-y-4">
+          {/* Scan CTA */}
+          <button
+            onClick={scanWholeBill}
+            className="tap relative flex w-full items-center gap-4 overflow-hidden rounded-3xl p-4 text-left text-white"
+            style={{ background: "linear-gradient(135deg,#D8252C,#5A0917)", boxShadow: "0 10px 30px -12px rgba(216,37,44,0.55)" }}
+          >
+            <span aria-hidden className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10" />
+            <span aria-hidden className="absolute -bottom-10 right-10 h-20 w-20 rounded-full bg-white/5" />
+            <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+              {scanning ? <Loader2 size={22} className="animate-spin" /> : <ScanLine size={22} />}
+            </span>
+            <span className="relative flex-1">
+              <span className="block font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">Fastest path</span>
+              <span className="mt-0.5 block text-base font-extrabold">Scan Bill QR or Barcode</span>
+              <span className="mt-0.5 block text-[11px] font-medium text-white/80">Auto-fills provider, reference and amount</span>
+            </span>
+            <ChevronRight size={20} className="relative opacity-80" />
+          </button>
+
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-[var(--iute-divider)]" />
+            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Or choose a biller</span>
+            <span className="h-px flex-1 bg-[var(--iute-divider)]" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {BILLERS.map((b) => (
+              <button
+                key={b.key}
+                onClick={() => pickBiller(b)}
+                className="tap group relative flex h-[132px] flex-col justify-between overflow-hidden rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-4 text-left transition"
+                style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -18px rgba(0,0,0,0.25)" }}
+              >
+                <span
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
+                  style={{ background: b.tint, boxShadow: `0 8px 20px -10px ${b.ring}` }}
+                >
+                  <b.Icon size={22} strokeWidth={2.25} />
+                </span>
+                <span>
+                  <span className="block text-sm font-extrabold leading-tight text-[var(--iute-text)]">{b.name}</span>
+                  <span className="mt-1 block font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--iute-text-soft)]">
+                    Last · {b.saved}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : step === "input" ? (
+        <div className="space-y-4">
+          {/* Saved profile chip */}
+          {biller && (
+            <button
+              onClick={() => setRef(biller.saved)}
+              className="tap flex w-full items-center gap-3 rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-3 text-left"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl text-white" style={{ background: biller.tint }}>
+                <biller.Icon size={16} />
               </span>
-              <span className="text-sm font-extrabold text-[var(--iute-text)]">{b.name}</span>
+              <span className="flex-1">
+                <span className="block font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--iute-text-soft)]">Saved account</span>
+                <span className="block text-sm font-extrabold text-[var(--iute-text)]">{biller.saved}</span>
+              </span>
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--iute-red)]">Use</span>
             </button>
-          ))}
+          )}
+
+          <label className="block">
+            <span className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Customer Reference</span>
+            <div className="relative">
+              <input
+                value={ref}
+                onChange={(e) => setRef(e.target.value)}
+                placeholder="e.g. 100-2034-882"
+                className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] pl-4 pr-12 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)] focus:ring-2 focus:ring-[var(--iute-red)]/20"
+              />
+              <button
+                type="button"
+                onClick={scanReference}
+                aria-label="Scan reference"
+                className="tap absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-[var(--iute-fog)] text-[var(--iute-text)]"
+              >
+                {scanning ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+              </button>
+            </div>
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Amount</span>
+            <div className="relative">
+              <input
+                value={amt}
+                onChange={(e) => setAmt(e.target.value.replace(/[^\d.]/g, ""))}
+                inputMode="decimal"
+                placeholder="0.00"
+                className="h-16 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] pl-4 pr-16 font-mono text-3xl font-extrabold tracking-tight text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)] focus:ring-2 focus:ring-[var(--iute-red)]/20"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-xs font-bold uppercase tracking-widest text-[var(--iute-text-soft)]">ден</span>
+            </div>
+            <span className="mt-1.5 block font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--iute-text-soft)]">
+              Balance · {fmtMKD(state.balanceMKD)}
+            </span>
+          </label>
+
+          <PrimaryButton disabled={!ref || !amt} onClick={() => setStep("review")}>
+            Review Payment
+          </PrimaryButton>
+          <button onClick={() => { setStep("select"); setBiller(null); }} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
+            Choose another biller
+          </button>
         </div>
       ) : (
-        <div className="space-y-3">
-          <label className="block">
-            <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Customer Reference</span>
-            <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="e.g. 100-2034-882" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Amount (MKD)</span>
-            <input value={amt} onChange={(e) => setAmt(e.target.value.replace(/[^\d.]/g, ""))} inputMode="decimal" placeholder="0.00" className="h-14 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-2xl font-extrabold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-          </label>
-          <p className="text-[11px] font-bold text-[var(--iute-text-soft)]">Balance: {fmtMKD(state.balanceMKD)}</p>
-          <PrimaryButton disabled={!ref || !amt} onClick={pay}>Pay Now</PrimaryButton>
-          <button onClick={() => setBiller(null)} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">Back</button>
+        // review
+        <div className="space-y-4">
+          <div
+            className="relative overflow-hidden rounded-3xl p-5 text-white"
+            style={{ background: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", boxShadow: "0 20px 50px -25px rgba(0,0,0,0.6)" }}
+          >
+            <span aria-hidden className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/[0.04]" />
+            <span aria-hidden className="absolute -bottom-16 -left-8 h-44 w-44 rounded-full bg-[var(--iute-red)]/15" />
+            <div className="relative flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl" style={{ background: biller?.tint }}>
+                {biller && <biller.Icon size={20} />}
+              </span>
+              <div>
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Paying</p>
+                <p className="text-base font-extrabold">{biller?.name}</p>
+              </div>
+            </div>
+            <p className="relative mt-5 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-white/60">Amount</p>
+            <p className="relative font-mono text-4xl font-extrabold tracking-tight">
+              {(+amt).toLocaleString("en-US", { minimumFractionDigits: 2 })} <span className="text-base text-white/70">ден</span>
+            </p>
+            <div className="relative mt-5 grid grid-cols-2 gap-3 border-t border-white/10 pt-4 text-[11px]">
+              <div>
+                <p className="font-mono font-bold uppercase tracking-widest text-white/55">Reference</p>
+                <p className="mt-0.5 font-mono text-sm font-bold">{ref}</p>
+              </div>
+              <div>
+                <p className="font-mono font-bold uppercase tracking-widest text-white/55">Fee</p>
+                <p className="mt-0.5 font-mono text-sm font-bold">0.00 ден</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Slide to pay */}
+          <div
+            onPointerDown={onSlideStart}
+            onPointerMove={onSlideMove}
+            onPointerUp={onSlideEnd}
+            onPointerCancel={onSlideEnd}
+            className="relative h-14 w-full select-none overflow-hidden rounded-3xl bg-[var(--iute-fog)]"
+          >
+            <div
+              className="absolute inset-y-0 left-0 rounded-3xl bg-[var(--iute-red)] transition-[width] duration-75"
+              style={{ width: `${56 + slide * 100}%`, maxWidth: "100%", opacity: 0.18 + slide * 0.4 }}
+            />
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-bold text-[var(--iute-text)]">
+              {slide > 0.05 ? "Release to confirm" : "Slide to Pay"}
+            </span>
+            <div
+              className="absolute top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-[var(--iute-red)] text-white shadow-lg"
+              style={{ left: `calc(${slide * 100}% - ${slide * 48}px + 4px)`, transition: dragging ? "none" : "left 200ms" }}
+            >
+              <Fingerprint size={20} />
+            </div>
+          </div>
+
+          <button onClick={() => setStep("input")} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
+            Edit details
+          </button>
         </div>
       )}
     </BottomSheet>
