@@ -6,7 +6,7 @@ import { PrimaryButton } from "../ui";
 export function Register() {
   const { go, toast, dispatch } = useStore();
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+389 71 234 567");
   const [dob, setDob] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
@@ -114,10 +114,14 @@ export function Register() {
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" className="h-11 w-full rounded-2xl bg-[var(--iute-surface)] px-4 text-base font-semibold text-[var(--iute-text)] outline-none ring-1 ring-[var(--iute-divider)] placeholder:font-medium placeholder:text-[var(--iute-text-soft)] focus:ring-2 focus:ring-[var(--iute-red)]" />
         </Field>
         <Field label="Phone Number">
-          <div className="flex h-11 items-center rounded-2xl bg-[var(--iute-surface)] ring-1 ring-[var(--iute-divider)] focus-within:ring-2 focus-within:ring-[var(--iute-red)]">
-            <span className="px-4 font-mono text-sm font-bold text-[var(--iute-text-soft)]">+389</span>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="71 234 567" className="h-full flex-1 bg-transparent pr-4 text-base font-semibold text-[var(--iute-text)] outline-none placeholder:font-medium placeholder:text-[var(--iute-text-soft)]" />
-          </div>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            inputMode="tel"
+            placeholder="+389 71 234 567"
+            className="h-11 w-full rounded-2xl bg-[var(--iute-surface)] px-4 text-base font-semibold text-[var(--iute-text)] outline-none ring-1 ring-[var(--iute-divider)] placeholder:font-medium placeholder:text-[var(--iute-text-soft)] focus:ring-2 focus:ring-[var(--iute-red)]"
+          />
         </Field>
         <Field label="Date of Birth">
           <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="h-11 w-full rounded-2xl bg-[var(--iute-surface)] px-4 text-base font-semibold text-[var(--iute-text)] outline-none ring-1 ring-[var(--iute-divider)] focus:ring-2 focus:ring-[var(--iute-red)]" />
