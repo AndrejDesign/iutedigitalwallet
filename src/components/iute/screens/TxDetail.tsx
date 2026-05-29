@@ -23,7 +23,7 @@ export function TxDetail() {
 
   const completed = t.amount !== 0;
   return (
-    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-4">
+    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-24 pt-4">
       <header className="flex items-center justify-between py-2">
         <button onClick={() => go("history")} className="tap rounded-2xl bg-[var(--iute-surface)] p-2">
           <ArrowLeft size={20} className="text-[var(--iute-text)]" />

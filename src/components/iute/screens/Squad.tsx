@@ -71,7 +71,7 @@ export function Squad() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-12">
+    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-24 pt-2">
       <header className="mb-4 flex items-center justify-between px-1 pt-2">
         <h1 className="text-3xl font-extrabold text-[var(--iute-text)]">Squad Hub</h1>
         <div className="flex items-center gap-2">
