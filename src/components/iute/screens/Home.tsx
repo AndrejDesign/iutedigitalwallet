@@ -241,6 +241,7 @@ export function Home() {
       <AddMoneySheet open={addOpen} onClose={() => setAddOpen(false)} />
       <SendMoneySheet open={sendOpen} onClose={() => setSendOpen(false)} />
       <RequestMoneySheet open={requestOpen} onClose={() => setRequestOpen(false)} />
+      <RedeemSheet open={redeemOpen} onClose={() => setRedeemOpen(false)} />
       <PayBillSheet open={payBillOpen} onClose={() => setPayBillOpen(false)} />
     </div>
   );
