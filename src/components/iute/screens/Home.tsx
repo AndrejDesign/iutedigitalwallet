@@ -261,13 +261,24 @@ export function Home() {
 function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, dispatch, toast } = useStore();
   type Biller = { key: string; name: string; Icon: typeof Zap; tint: string; ring: string; saved: string; suggested: number };
-  const BILLERS: Biller[] = [
+  const DEFAULT_BILLERS: Biller[] = [
     { key: "evn",     name: "EVN Electricity",  Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)",  saved: "100-2034-882", suggested: 1840 },
     { key: "telekom", name: "Telekom Internet", Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",    saved: "TEL-77-401-225", suggested: 990  },
     { key: "vodovod", name: "Vodovod Water",    Icon: Droplet, tint: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", ring: "rgba(45,45,45,0.28)",   saved: "VW-552-0098",   suggested: 620  },
   ];
+  const CATALOG: Biller[] = [
+    { key: "toplifikacija", name: "Toplifikacija Heating", Icon: Flame,   tint: "linear-gradient(135deg,#B5462A,#5A1D0E)", ring: "rgba(181,70,42,0.25)", saved: "", suggested: 1450 },
+    { key: "a1",            name: "A1 Mobile",             Icon: Phone,   tint: "linear-gradient(135deg,#1E40AF,#0B1E5C)", ring: "rgba(30,64,175,0.25)", saved: "", suggested: 690  },
+    { key: "mts",           name: "MTS Mobile",            Icon: Phone,   tint: "linear-gradient(135deg,#5B21B6,#1E1043)", ring: "rgba(91,33,182,0.25)", saved: "", suggested: 590  },
+    { key: "mkdtv",         name: "MKD-TV Cable",          Icon: Tv,      tint: "linear-gradient(135deg,#0F766E,#053B36)", ring: "rgba(15,118,110,0.25)", saved: "", suggested: 750 },
+    { key: "drisla",        name: "Drisla Waste",          Icon: Trash2,  tint: "linear-gradient(135deg,#3F3F46,#0F0F12)", ring: "rgba(63,63,70,0.28)",  saved: "", suggested: 320  },
+  ];
 
-  const [step, setStep] = useState<"select" | "input" | "review" | "paid">("select");
+  const [billers, setBillers] = useState<Biller[]>(DEFAULT_BILLERS);
+  const [step, setStep] = useState<"select" | "input" | "review" | "paid" | "add">("select");
+  const [search, setSearch] = useState("");
+  const [linking, setLinking] = useState<Biller | null>(null);
+  const [linkRef, setLinkRef] = useState("");
   const [biller, setBiller] = useState<Biller | null>(null);
   const [ref, setRef] = useState("");
   const [amt, setAmt] = useState("");
@@ -278,6 +289,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   function reset() {
     setStep("select"); setBiller(null); setRef(""); setAmt("");
     setScanning(false); setSlide(0); setDragging(false);
+    setSearch(""); setLinking(null); setLinkRef("");
   }
   function close() { onClose(); setTimeout(reset, 250); }
 
@@ -291,11 +303,28 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   function scanWholeBill() {
     setScanning(true);
     setTimeout(() => {
-      const b = BILLERS[0];
+      const b = billers[0];
       setBiller(b); setRef(b.saved); setAmt(String(b.suggested));
       setScanning(false); setStep("review");
       toast("✓ Bill parsed");
     }, 1100);
+  }
+
+  function openAddBiller() {
+    if (billers.length >= 5) {
+      toast("Maximum quick-access billers reached. Remove one to add another.");
+      return;
+    }
+    setStep("add");
+  }
+
+  function confirmLink() {
+    if (!linking || !linkRef.trim()) { toast("Enter a reference number"); return; }
+    const added = { ...linking, saved: linkRef.trim() };
+    setBillers((prev) => [...prev, added]);
+    toast(`✓ ${added.name} linked`);
+    setLinking(null); setLinkRef(""); setSearch("");
+    setStep("select");
   }
 
   function scanReference() {
