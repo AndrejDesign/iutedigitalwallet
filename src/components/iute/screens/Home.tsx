@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   ArrowUpRight, ArrowDownLeft, Building2, Wallet,
   Lock, ShoppingBag, Loader2, Plus, Send, ArrowLeftRight, Zap, Wifi, Droplet,
-  ScanLine, Camera, ChevronRight, Fingerprint, Check, Search, Flame, Tv, Phone, Trash2,
+  ScanLine, Camera, ChevronRight, Fingerprint, Check,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
 import { Card, BottomSheet, PrimaryButton } from "../ui";
@@ -261,24 +261,13 @@ export function Home() {
 function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, dispatch, toast } = useStore();
   type Biller = { key: string; name: string; Icon: typeof Zap; tint: string; ring: string; saved: string; suggested: number };
-  const DEFAULT_BILLERS: Biller[] = [
+  const BILLERS: Biller[] = [
     { key: "evn",     name: "EVN Electricity",  Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)",  saved: "100-2034-882", suggested: 1840 },
     { key: "telekom", name: "Telekom Internet", Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",    saved: "TEL-77-401-225", suggested: 990  },
     { key: "vodovod", name: "Vodovod Water",    Icon: Droplet, tint: "linear-gradient(135deg,#2D2D2D,#0E0E0E)", ring: "rgba(45,45,45,0.28)",   saved: "VW-552-0098",   suggested: 620  },
   ];
-  const CATALOG: Biller[] = [
-    { key: "toplifikacija", name: "Toplifikacija Heating", Icon: Flame,   tint: "linear-gradient(135deg,#B5462A,#5A1D0E)", ring: "rgba(181,70,42,0.25)", saved: "", suggested: 1450 },
-    { key: "a1",            name: "A1 Mobile",             Icon: Phone,   tint: "linear-gradient(135deg,#1E40AF,#0B1E5C)", ring: "rgba(30,64,175,0.25)", saved: "", suggested: 690  },
-    { key: "mts",           name: "MTS Mobile",            Icon: Phone,   tint: "linear-gradient(135deg,#5B21B6,#1E1043)", ring: "rgba(91,33,182,0.25)", saved: "", suggested: 590  },
-    { key: "mkdtv",         name: "MKD-TV Cable",          Icon: Tv,      tint: "linear-gradient(135deg,#0F766E,#053B36)", ring: "rgba(15,118,110,0.25)", saved: "", suggested: 750 },
-    { key: "drisla",        name: "Drisla Waste",          Icon: Trash2,  tint: "linear-gradient(135deg,#3F3F46,#0F0F12)", ring: "rgba(63,63,70,0.28)",  saved: "", suggested: 320  },
-  ];
 
-  const [billers, setBillers] = useState<Biller[]>(DEFAULT_BILLERS);
-  const [step, setStep] = useState<"select" | "input" | "review" | "paid" | "add">("select");
-  const [search, setSearch] = useState("");
-  const [linking, setLinking] = useState<Biller | null>(null);
-  const [linkRef, setLinkRef] = useState("");
+  const [step, setStep] = useState<"select" | "input" | "review" | "paid">("select");
   const [biller, setBiller] = useState<Biller | null>(null);
   const [ref, setRef] = useState("");
   const [amt, setAmt] = useState("");
@@ -289,7 +278,6 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   function reset() {
     setStep("select"); setBiller(null); setRef(""); setAmt("");
     setScanning(false); setSlide(0); setDragging(false);
-    setSearch(""); setLinking(null); setLinkRef("");
   }
   function close() { onClose(); setTimeout(reset, 250); }
 
@@ -303,28 +291,11 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   function scanWholeBill() {
     setScanning(true);
     setTimeout(() => {
-      const b = billers[0];
+      const b = BILLERS[0];
       setBiller(b); setRef(b.saved); setAmt(String(b.suggested));
       setScanning(false); setStep("review");
       toast("✓ Bill parsed");
     }, 1100);
-  }
-
-  function openAddBiller() {
-    if (billers.length >= 5) {
-      toast("Maximum quick-access billers reached. Remove one to add another.");
-      return;
-    }
-    setStep("add");
-  }
-
-  function confirmLink() {
-    if (!linking || !linkRef.trim()) { toast("Enter a reference number"); return; }
-    const added = { ...linking, saved: linkRef.trim() };
-    setBillers((prev) => [...prev, added]);
-    toast(`✓ ${added.name} linked`);
-    setLinking(null); setLinkRef(""); setSearch("");
-    setStep("select");
   }
 
   function scanReference() {
@@ -364,8 +335,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const title =
     step === "select" ? "Pay a Bill" :
     step === "input"  ? biller?.name ?? "" :
-    step === "review" ? "Review Payment" :
-    step === "add"    ? (linking ? "Link Account" : "Add Biller") : "";
+    step === "review" ? "Review Payment" : "";
 
   return (
     <BottomSheet open={open} onClose={close} title={title}>
@@ -405,7 +375,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {billers.slice(0, 4).map((b) => (
+            {BILLERS.map((b) => (
               <button
                 key={b.key}
                 onClick={() => pickBiller(b)}
@@ -426,29 +396,7 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
                 </span>
               </button>
             ))}
-            {billers.length < 4 && (
-              <button
-                onClick={openAddBiller}
-                className="tap group relative flex h-[132px] flex-col items-center justify-center gap-2 overflow-hidden rounded-3xl border-2 border-dashed border-[var(--iute-divider)] bg-transparent p-4 text-[var(--iute-text-soft)] transition hover:border-[var(--iute-red)]/40 hover:text-[var(--iute-red)]"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--iute-fog)]">
-                  <Plus size={22} strokeWidth={2.4} />
-                </span>
-                <span className="text-sm font-extrabold">Add Biller</span>
-              </button>
-            )}
           </div>
-
-          {billers.length >= 4 && (
-            <button
-              onClick={openAddBiller}
-              className="tap flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--iute-divider)] bg-transparent px-4 py-3 text-sm font-extrabold text-[var(--iute-text-soft)] transition hover:border-[var(--iute-red)]/40 hover:text-[var(--iute-red)]"
-            >
-              <Plus size={18} strokeWidth={2.4} />
-              Add Biller
-              <span className="font-mono text-[10px] font-bold uppercase tracking-widest opacity-70">{billers.length}/5</span>
-            </button>
-          )}
         </div>
       ) : step === "input" ? (
         <div className="space-y-4">
@@ -513,7 +461,8 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
             Choose another biller
           </button>
         </div>
-      ) : step === "review" ? (
+      ) : (
+        // review
         <div className="space-y-4">
           <div
             className="relative overflow-hidden rounded-3xl p-5 text-white"
@@ -572,72 +521,6 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           <button onClick={() => setStep("input")} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
             Edit details
           </button>
-        </div>
-      ) : null}
-
-      {step === "add" && (
-        <div className="space-y-4">
-          {!linking ? (
-            <>
-              <label className="relative block">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--iute-text-soft)]" />
-                <input
-                  autoFocus
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search providers"
-                  className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] pl-11 pr-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)] focus:ring-2 focus:ring-[var(--iute-red)]/20"
-                />
-              </label>
-              <div className="space-y-2">
-                {CATALOG
-                  .filter((b) => !billers.some((x) => x.key === b.key))
-                  .filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
-                  .map((b) => (
-                    <button
-                      key={b.key}
-                      onClick={() => { setLinking(b); setLinkRef(""); }}
-                      className="tap flex w-full items-center gap-3 rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-3 text-left"
-                    >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-white" style={{ background: b.tint }}>
-                        <b.Icon size={18} />
-                      </span>
-                      <span className="flex-1 text-sm font-extrabold text-[var(--iute-text)]">{b.name}</span>
-                      <ChevronRight size={18} className="text-[var(--iute-text-soft)]" />
-                    </button>
-                  ))}
-              </div>
-              <button onClick={() => setStep("select")} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
-                Cancel
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-3 rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-white" style={{ background: linking.tint }}>
-                  <linking.Icon size={18} />
-                </span>
-                <div>
-                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--iute-text-soft)]">Biller</p>
-                  <p className="text-sm font-extrabold text-[var(--iute-text)]">{linking.name}</p>
-                </div>
-              </div>
-              <label className="block">
-                <span className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Customer Reference</span>
-                <input
-                  autoFocus
-                  value={linkRef}
-                  onChange={(e) => setLinkRef(e.target.value)}
-                  placeholder="Enter your default account number"
-                  className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)] focus:ring-2 focus:ring-[var(--iute-red)]/20"
-                />
-              </label>
-              <PrimaryButton disabled={!linkRef.trim()} onClick={confirmLink}>Link Biller</PrimaryButton>
-              <button onClick={() => setLinking(null)} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
-                Back to search
-              </button>
-            </>
-          )}
         </div>
       )}
     </BottomSheet>

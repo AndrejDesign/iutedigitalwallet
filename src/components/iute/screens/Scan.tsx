@@ -49,7 +49,7 @@ export function Scan() {
   const bnplEligible = state.tier === 2 && confirm && confirm.amount > 500;
 
   return (
-    <div className={`relative flex h-full flex-col overflow-hidden pb-20 text-white transition-colors duration-300 ${torch ? "bg-[#3a3320]" : "bg-[#1A1A1A]"}`}>
+    <div className={`relative flex min-h-screen flex-col pb-32 text-white transition-colors duration-300 ${torch ? "bg-[#3a3320]" : "bg-[#1A1A1A]"}`}>
       {torch && (
         <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_55%,rgba(255,225,150,0.35),transparent_55%)]" />
       )}
