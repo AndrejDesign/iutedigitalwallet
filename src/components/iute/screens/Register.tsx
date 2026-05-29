@@ -6,7 +6,7 @@ import { PrimaryButton } from "../ui";
 export function Register() {
   const { go, toast, dispatch } = useStore();
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("+389 71 234 567");
+  const [phone, setPhone] = useState("");
   const [dob, setDob] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
