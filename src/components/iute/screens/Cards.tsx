@@ -230,3 +230,57 @@ function TypeOption({ Icon, label, sub, onClick }: { Icon: typeof Plus; label: s
     </button>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* CATEGORY BENTO                                                             */
+/* -------------------------------------------------------------------------- */
+function CategoryBento() {
+  const [active, setActive] = useState<string | null>(null);
+  const total = CARD_CATEGORIES.reduce((s, c) => s + c.amount, 0);
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {CARD_CATEGORIES.map((c) => {
+        const pct = Math.round((c.amount / total) * 100);
+        const isActive = active === c.label;
+        return (
+          <button
+            key={c.label}
+            onClick={() => setActive(isActive ? null : c.label)}
+            className={`tap relative overflow-hidden rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-[var(--iute-divider)] transition-transform duration-200 dark:bg-[var(--iute-surface)] ${isActive ? "scale-[1.02]" : "hover:scale-[1.02]"}`}
+            style={{ borderTop: `3px solid ${c.color}` }}
+          >
+            {c.badge && (
+              <span
+                className="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[9px] font-extrabold text-white shadow"
+                style={{ background: c.color }}
+              >
+                {c.badge}
+              </span>
+            )}
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-lg"
+              style={{ background: `${c.color}22`, color: c.color }}
+            >
+              {c.icon}
+            </span>
+            <p className="mt-2 text-xs font-extrabold text-[var(--iute-text)]">{c.label}</p>
+            <p className="font-mono text-base font-extrabold" style={{ color: c.color }}>
+              {c.amount.toLocaleString()} <span className="text-[10px] opacity-70">ден</span>
+            </p>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--iute-fog)]">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${pct}%`, background: c.color }}
+              />
+            </div>
+            {isActive && (
+              <p className="mt-1 font-mono text-[10px] font-bold" style={{ color: c.color }}>
+                {pct}% of total
+              </p>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
