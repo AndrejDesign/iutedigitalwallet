@@ -3,7 +3,7 @@ import {
   CreditCard, Landmark, Fingerprint, Lock, ShieldCheck, Globe,
   Map, HelpCircle, Bell, LogOut, ChevronRight,
 } from "lucide-react";
-import { useStore } from "../store";
+import { useStore, getInitials } from "../store";
 import { BottomSheet, PrimaryButton, Toggle } from "../ui";
 
 export function Account() {
@@ -29,9 +29,9 @@ export function Account() {
     <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-24 pt-2">
       <div className="overflow-hidden rounded-3xl bg-[var(--iute-red)] p-5 text-white">
         <div className="flex items-center gap-4">
-          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--iute-merlot)] text-2xl font-extrabold">AA</span>
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--iute-merlot)] text-2xl font-extrabold">{getInitials(state.userName) || "—"}</span>
           <div>
-            <p className="text-xl font-extrabold">Anja Angelovska</p>
+            <p className="text-xl font-extrabold">{state.userName || "Your Wallet"}</p>
             <p className="text-sm font-medium opacity-80">+389 71 ••• •72</p>
           </div>
         </div>

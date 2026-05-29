@@ -69,7 +69,9 @@ export function Home() {
 
       <header className="px-5 pt-3">
         <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Good morning</p>
-        <h1 className="text-xl font-extrabold text-[var(--iute-text)]">My Wallet — Anja 👋</h1>
+        <h1 className="text-xl font-extrabold text-[var(--iute-text)]">
+          {state.userName ? `My Wallet — ${state.userName.trim().split(/\s+/)[0]} 👋` : "My Wallet 👋"}
+        </h1>
       </header>
 
       {/* Hero balance */}

@@ -26,6 +26,7 @@ export interface Txn {
 export interface AppState {
   screen: ScreenKey;
   tier: Tier;
+  userName: string;
   balanceMKD: number;
   rate: number; // EUR per MKD denominator (MKD per 1 EUR)
   iutePoints: number;

@@ -13,6 +13,7 @@ import type { AppState, ScreenKey, Tier, Txn } from "./types";
 type Action =
   | { type: "SET_SCREEN"; screen: ScreenKey }
   | { type: "SET_TIER"; tier: Tier }
+  | { type: "SET_USER_NAME"; name: string }
   | { type: "SET_BALANCE"; balance: number }
   | { type: "SET_RATE"; rate: number }
   | { type: "SET_POINTS"; points: number }
@@ -27,6 +28,7 @@ type Action =
 const initial: AppState = {
   screen: "splash",
   tier: 1,
+  userName: "",
   balanceMKD: 8450,
   rate: 61.5,
   iutePoints: 1450,
@@ -49,6 +51,7 @@ function reducer(s: AppState, a: Action): AppState {
   switch (a.type) {
     case "SET_SCREEN": return { ...s, screen: a.screen };
     case "SET_TIER": return { ...s, tier: a.tier };
+    case "SET_USER_NAME": return { ...s, userName: a.name };
     case "SET_BALANCE": return { ...s, balanceMKD: a.balance };
     case "SET_RATE": return { ...s, rate: a.rate };
     case "SET_POINTS": return { ...s, iutePoints: a.points };
@@ -99,4 +102,14 @@ export function fmtMKD(n: number) {
 }
 export function fmtEUR(n: number) {
   return "≈ " + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " EUR";
+}
+
+export function getFirstName(name: string) {
+  return name.trim().split(/\s+/)[0] ?? "";
+}
+export function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
