@@ -1,4 +1,5 @@
-import { Bell, Wallet, ArrowDownLeft, CreditCard, Flame, Gift, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { Bell, ArrowDownLeft, CreditCard, Flame, Gift, ShieldAlert } from "lucide-react";
 import { useStore } from "./store";
 import { BottomSheet } from "./ui";
 import type { Notification } from "./types";
@@ -12,7 +13,8 @@ const ICONS: Record<Notification["icon"], typeof Bell> = {
 };
 
 export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, go } = useStore();
+  const [lang, setLang] = useState<"EN" | "MK">("EN");
   const unread = state.notifications.filter((n) => !n.read).length;
 
   function openSheet() {
@@ -24,24 +26,39 @@ export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: bo
   return (
     <>
       <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-[var(--iute-divider)] bg-[var(--iute-bg)]/90 px-4 backdrop-blur-md">
+        <span className="text-sm font-extrabold tracking-tight text-[var(--iute-text)]">
+          iute<span className="text-[var(--iute-red)]">buddy</span>
+        </span>
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--iute-red)] text-white">
-            <Wallet size={15} strokeWidth={2.6} />
-          </span>
-          <span className="text-sm font-extrabold tracking-tight text-[var(--iute-text)]">MyIute<span className="text-[var(--iute-red)]">Pay</span></span>
+          <button
+            onClick={() => setLang((l) => (l === "EN" ? "MK" : "EN"))}
+            aria-label={`Language: ${lang}. Tap to switch`}
+            className="tap flex h-9 items-center gap-1 rounded-2xl bg-[var(--iute-surface)] px-2.5 font-mono text-[11px] font-extrabold tracking-wide text-[var(--iute-text)]"
+          >
+            <span className={lang === "EN" ? "text-[var(--iute-red)]" : "opacity-50"}>EN</span>
+            <span className="opacity-40">/</span>
+            <span className={lang === "MK" ? "text-[var(--iute-red)]" : "opacity-50"}>MK</span>
+          </button>
+          <button
+            onClick={openSheet}
+            aria-label={`Notifications${unread ? ` (${unread} unread)` : ""}`}
+            className="tap relative flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--iute-surface)]"
+          >
+            <Bell size={18} className="text-[var(--iute-text)]" />
+            {unread > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold leading-none text-white">
+                {unread}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => go("account")}
+            aria-label="Profile"
+            className="tap flex h-9 w-9 items-center justify-center rounded-full bg-[var(--iute-red)] text-[11px] font-extrabold text-white ring-2 ring-[var(--iute-bg)]"
+          >
+            AA
+          </button>
         </div>
-        <button
-          onClick={openSheet}
-          aria-label={`Notifications${unread ? ` (${unread} unread)` : ""}`}
-          className="tap relative flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--iute-surface)]"
-        >
-          <Bell size={18} className="text-[var(--iute-text)]" />
-          {unread > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold leading-none text-white">
-              {unread}
-            </span>
-          )}
-        </button>
       </header>
 
       <BottomSheet open={open} onClose={() => setOpen(false)} title="Notifications">
