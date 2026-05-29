@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   ArrowUpRight, ArrowDownLeft, Building2, Wallet,
-  Lock, ShoppingBag, Loader2, Plus, Send, RefreshCw, Zap, Wifi, Droplet, Flame,
+  Lock, ShoppingBag, Loader2, Plus, Send, ArrowLeftRight, Zap, Wifi, Droplet, Flame,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
 import { Card, BottomSheet, PrimaryButton } from "../ui";
@@ -18,16 +18,18 @@ export function Home() {
   const [payBillOpen, setPayBillOpen] = useState(false);
   const [redeemOpen, setRedeemOpen] = useState(false);
   const [swapAmt, setSwapAmt] = useState("1230");
-  const [spinning, setSpinning] = useState(false);
+  const [swapDir, setSwapDir] = useState<"MKD_TO_EUR" | "EUR_TO_MKD">("MKD_TO_EUR");
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
   const [startY, setStartY] = useState<number | null>(null);
 
   const mkdToEur = (state.balanceMKD / state.rate).toFixed(2);
 
-  function onSwap() {
-    setSpinning(true);
-    setTimeout(() => setSpinning(false), 600);
+  function toggleSwap() {
+    const n = +swapAmt || 0;
+    const converted = swapDir === "MKD_TO_EUR" ? (n / state.rate).toFixed(2) : (n * state.rate).toFixed(2);
+    setSwapAmt(converted);
+    setSwapDir((d) => (d === "MKD_TO_EUR" ? "EUR_TO_MKD" : "MKD_TO_EUR"));
   }
 
   function onRefresh() {
@@ -119,25 +121,38 @@ export function Home() {
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Instant Swap</p>
             <span className="font-mono text-[11px] font-bold text-[var(--iute-text-soft)]">1 EUR = {state.rate} ден</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-2xl bg-[var(--iute-fog)] p-3">
-              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">MKD</p>
-              <input
-                value={swapAmt}
-                onChange={(e) => setSwapAmt(e.target.value.replace(/[^\d.]/g, ""))}
-                className="w-full bg-transparent font-mono text-xl font-extrabold text-[var(--iute-text)] outline-none"
-              />
-            </div>
-            <button onClick={onSwap} aria-label="Refresh rate" className="tap flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--iute-red)] text-white">
-              <RefreshCw size={20} className={spinning ? "animate-spin" : ""} />
-            </button>
-            <div className="flex-1 rounded-2xl bg-[var(--iute-cloud)] p-3">
-              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">EUR</p>
-              <p className="font-mono text-xl font-extrabold text-[var(--iute-text)]">
-                {(((+swapAmt || 0) / state.rate) || 0).toFixed(2)}
-              </p>
-            </div>
-          </div>
+          {(() => {
+            const fromCcy = swapDir === "MKD_TO_EUR" ? "MKD" : "EUR";
+            const toCcy = swapDir === "MKD_TO_EUR" ? "EUR" : "MKD";
+            const n = +swapAmt || 0;
+            const converted = swapDir === "MKD_TO_EUR" ? (n / state.rate) : (n * state.rate);
+            return (
+              <button
+                onClick={toggleSwap}
+                aria-label={`Swap ${fromCcy} to ${toCcy}`}
+                className="tap flex w-full items-center gap-2 text-left"
+              >
+                <div className="flex-1 rounded-2xl bg-[var(--iute-fog)] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">{fromCcy}</p>
+                  <input
+                    value={swapAmt}
+                    onChange={(e) => setSwapAmt(e.target.value.replace(/[^\d.]/g, ""))}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full bg-transparent font-mono text-xl font-extrabold text-[var(--iute-text)] outline-none"
+                  />
+                </div>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--iute-red)] text-white shadow-md transition-transform active:rotate-180">
+                  <ArrowLeftRight size={18} />
+                </span>
+                <div className="flex-1 rounded-2xl bg-[var(--iute-cloud)] p-3">
+                  <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">{toCcy}</p>
+                  <p className="font-mono text-xl font-extrabold text-[var(--iute-text)]">
+                    {converted.toFixed(2)}
+                  </p>
+                </div>
+              </button>
+            );
+          })()}
         </Card>
 
         <Card>
