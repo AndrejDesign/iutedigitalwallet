@@ -67,9 +67,9 @@ export function FxHub() {
             <p className="text-sm font-extrabold text-[var(--iute-text)]">Send to Friends in Any Currency</p>
             <p className="text-xs font-medium text-[var(--iute-text-soft)]">They receive in their local currency, instantly.</p>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className="grid grid-cols-3 gap-3 pb-1">
             {CONTACTS.map((c) => (
-              <div key={c.id} className="flex w-[88px] shrink-0 flex-col items-center gap-1.5 rounded-2xl bg-[var(--iute-fog)] p-2">
+              <div key={c.id} className="flex flex-col items-center gap-1.5 rounded-2xl bg-[var(--iute-fog)] p-2">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full text-white text-xs font-extrabold" style={{ background: c.color }}>
                   {c.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
                 </span>
