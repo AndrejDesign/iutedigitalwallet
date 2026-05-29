@@ -27,7 +27,18 @@ export function Squad() {
   const [buddyOpen, setBuddyOpen] = useState(false);
   const [extraBuddies, setExtraBuddies] = useState<Buddy[]>([]);
 
-  const board: Buddy[] = [...LEADERBOARD, ...extraBuddies].sort((a, b) => b.days - a.days).map((u, i) => ({ ...u, rank: i + 1 }));
+  const myDisplay = (() => {
+    const n = state.userName.trim();
+    if (!n) return "You";
+    const parts = n.split(/\s+/);
+    const first = parts[0];
+    const lastInitial = parts.length > 1 ? ` ${parts[parts.length - 1][0]}.` : "";
+    return `${first}${lastInitial} (you)`;
+  })();
+  const renamedLeaderboard = LEADERBOARD.map((u) =>
+    u.name.toLowerCase().includes("(you)") ? { ...u, name: myDisplay } : u
+  );
+  const board: Buddy[] = [...renamedLeaderboard, ...extraBuddies].sort((a, b) => b.days - a.days).map((u, i) => ({ ...u, rank: i + 1 }));
   const friends = board.filter((u) => !u.name.toLowerCase().includes("you"));
   const me = board.find((u) => u.name.toLowerCase().includes("you")) ?? board[0];
   const friendAvgDays = friends.length ? Math.round(friends.reduce((s, u) => s + u.days, 0) / friends.length) : 0;
