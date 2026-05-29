@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { useStore, getFirstName } from "../store";
 import { PrimaryButton } from "../ui";
 
@@ -11,6 +12,10 @@ export function Register() {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [err, setErr] = useState(false);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (otpSent) refs.current[0]?.focus();
+  }, [otpSent]);
 
   function setDigit(i: number, v: string) {
     const d = v.replace(/\D/g, "").slice(-1);
@@ -30,6 +35,52 @@ export function Register() {
         setErr(true);
       }
     }
+  }
+
+  if (otpSent) {
+    const maskedPhone = phone ? `+389 ${phone}` : "your phone";
+    return (
+      <div className="flex h-full flex-col bg-[var(--iute-bg)] px-6 pb-6 pt-6">
+        <button
+          onClick={() => { setOtpSent(false); setOtp(["", "", "", ""]); setErr(false); }}
+          className="tap -ml-2 flex h-10 w-10 items-center justify-center rounded-full text-[var(--iute-text)] hover:bg-[var(--iute-surface)]"
+          aria-label="Back"
+        >
+          <ArrowLeft size={22} />
+        </button>
+
+        <div className="mt-6">
+          <h1 className="text-2xl font-extrabold text-[var(--iute-text)]">Enter verification code</h1>
+          <p className="mt-2 text-sm font-medium text-[var(--iute-text-soft)]">
+            We sent a 4-digit code to <span className="font-bold text-[var(--iute-text)]">{maskedPhone}</span>.
+          </p>
+        </div>
+
+        <div className="mt-10">
+          <div className={`flex justify-between gap-3 ${err ? "shake-x" : ""}`}>
+            {otp.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => { refs.current[i] = el; }}
+                value={d}
+                onChange={(e) => setDigit(i, e.target.value)}
+                inputMode="numeric"
+                maxLength={1}
+                className={`h-16 flex-1 rounded-2xl bg-[var(--iute-surface)] text-center font-mono text-3xl font-bold text-[var(--iute-text)] outline-none ring-1 ${err ? "ring-2 ring-[var(--iute-red)]" : "ring-[var(--iute-divider)] focus:ring-2 focus:ring-[var(--iute-red)]"}`}
+              />
+            ))}
+          </div>
+          {err && <p className="mt-3 text-sm font-bold text-[var(--iute-red)]">Wrong code. Hint: 1234</p>}
+        </div>
+
+        <button
+          onClick={() => toast("OTP resent. Try 1234")}
+          className="tap mt-6 self-start text-sm font-bold text-[var(--iute-red)]"
+        >
+          Resend code
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -52,29 +103,9 @@ export function Register() {
         </Field>
       </div>
 
-      {!otpSent ? (
-        <div className="mt-6">
-          <PrimaryButton onClick={() => { setOtpSent(true); toast("OTP sent. Try 1234"); }}>Send OTP</PrimaryButton>
-        </div>
-      ) : (
-        <div className="mt-6">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Enter the 4-digit code</p>
-          <div className={`flex gap-3 ${err ? "shake-x" : ""}`}>
-            {otp.map((d, i) => (
-              <input
-                key={i}
-                ref={(el) => { refs.current[i] = el; }}
-                value={d}
-                onChange={(e) => setDigit(i, e.target.value)}
-                inputMode="numeric"
-                maxLength={1}
-                className={`h-12 w-12 rounded-2xl bg-[var(--iute-surface)] text-center font-mono text-2xl font-bold text-[var(--iute-text)] outline-none ring-1 ${err ? "ring-2 ring-[var(--iute-red)]" : "ring-[var(--iute-divider)] focus:ring-2 focus:ring-[var(--iute-red)]"}`}
-              />
-            ))}
-          </div>
-          {err && <p className="mt-2 text-sm font-bold text-[var(--iute-red)]">Wrong code. Hint: 1234</p>}
-        </div>
-      )}
+      <div className="mt-6">
+        <PrimaryButton onClick={() => { setOtpSent(true); toast("OTP sent. Try 1234"); }}>Send OTP</PrimaryButton>
+      </div>
     </div>
   );
 }
