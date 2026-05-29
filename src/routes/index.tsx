@@ -6,8 +6,12 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "MyIute Pay — Social-first Wallet" },
       { name: "description", content: "Interactive prototype of MyIute Pay, a Gen-Z digital wallet for North Macedonia." },
-      { property: "og:title", content: "MyIute Pay" },
-      { property: "og:description", content: "Send cash like a DM. Split bills, build streaks, shake to freeze." },
+      { property: "og:title", content: "MyIute Pay — Social-first Digital Wallet" },
+      { property: "og:description", content: "Gen-Z digital wallet for North Macedonia. Send cash like a DM, split bills, and build streaks." },
+      { property: "og:url", content: "https://iutedigitalwallet.lovable.app/" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://iutedigitalwallet.lovable.app/" },
     ],
   }),
   component: Index,

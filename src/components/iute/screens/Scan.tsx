@@ -54,9 +54,9 @@ export function Scan() {
         <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_55%,rgba(255,225,150,0.35),transparent_55%)]" />
       )}
       <header className="flex items-center justify-between bg-[var(--iute-red)] px-4 py-4">
-        <button onClick={() => go("home")} className="tap"><ArrowLeft size={22} /></button>
+        <button onClick={() => go("home")} aria-label="Back to home" className="tap"><ArrowLeft size={22} /></button>
         <h1 className="text-base font-extrabold uppercase tracking-wide">Scan to Pay</h1>
-        <button className="tap"><History size={22} /></button>
+        <button aria-label="Scan history" className="tap"><History size={22} /></button>
       </header>
 
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
@@ -128,7 +128,7 @@ export function Scan() {
                 ))}
                 <span />
                 <button onClick={() => tryPin("0")} className="tap h-12 rounded-2xl bg-[var(--iute-fog)] font-mono text-lg font-extrabold text-[var(--iute-text)]">0</button>
-                <button onClick={() => setPin(pin.slice(0, -1))} className="tap h-12 rounded-2xl bg-[var(--iute-fog)] text-sm font-bold text-[var(--iute-text-soft)]">⌫</button>
+                <button onClick={() => setPin(pin.slice(0, -1))} aria-label="Delete last digit" className="tap h-12 rounded-2xl bg-[var(--iute-fog)] text-sm font-bold text-[var(--iute-text-soft)]">⌫</button>
               </div>
             </div>
             <button onClick={() => setConfirm(null)} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">Cancel</button>

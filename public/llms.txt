@@ -1,0 +1,7 @@
+# MyIute Pay
+
+> Interactive prototype of MyIute Pay — a social-first, Gen-Z digital wallet for North Macedonia. Send cash like a DM, split bills, build streaks, and freeze cards instantly.
+
+## Pages
+
+- [Home](/): MyIute Pay prototype — interactive wallet experience with onboarding, scan-to-pay, send money, cards, squad, and history flows.

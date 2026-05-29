@@ -13,7 +13,7 @@ export function Splash() {
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-[var(--iute-red)] font-extrabold text-3xl shadow-2xl">
           iP
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight">MyIute Pay</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">MyIute Pay — Social-first Wallet</h1>
         <p className="text-sm font-semibold opacity-80">Social-first wallet · Skopje</p>
       </div>
     </div>
