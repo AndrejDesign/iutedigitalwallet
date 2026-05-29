@@ -364,7 +364,8 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const title =
     step === "select" ? "Pay a Bill" :
     step === "input"  ? biller?.name ?? "" :
-    step === "review" ? "Review Payment" : "";
+    step === "review" ? "Review Payment" :
+    step === "add"    ? (linking ? "Link Account" : "Add Biller") : "";
 
   return (
     <BottomSheet open={open} onClose={close} title={title}>
@@ -572,6 +573,72 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           <button onClick={() => setStep("input")} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
             Edit details
           </button>
+        </div>
+      )}
+
+      {step === "add" && (
+        <div className="space-y-4">
+          {!linking ? (
+            <>
+              <label className="relative block">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--iute-text-soft)]" />
+                <input
+                  autoFocus
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search providers"
+                  className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] pl-11 pr-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)] focus:ring-2 focus:ring-[var(--iute-red)]/20"
+                />
+              </label>
+              <div className="space-y-2">
+                {CATALOG
+                  .filter((b) => !billers.some((x) => x.key === b.key))
+                  .filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
+                  .map((b) => (
+                    <button
+                      key={b.key}
+                      onClick={() => { setLinking(b); setLinkRef(""); }}
+                      className="tap flex w-full items-center gap-3 rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-3 text-left"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-white" style={{ background: b.tint }}>
+                        <b.Icon size={18} />
+                      </span>
+                      <span className="flex-1 text-sm font-extrabold text-[var(--iute-text)]">{b.name}</span>
+                      <ChevronRight size={18} className="text-[var(--iute-text-soft)]" />
+                    </button>
+                  ))}
+              </div>
+              <button onClick={() => setStep("select")} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
+                Cancel
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl text-white" style={{ background: linking.tint }}>
+                  <linking.Icon size={18} />
+                </span>
+                <div>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--iute-text-soft)]">Biller</p>
+                  <p className="text-sm font-extrabold text-[var(--iute-text)]">{linking.name}</p>
+                </div>
+              </div>
+              <label className="block">
+                <span className="mb-1.5 block font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--iute-text-soft)]">Customer Reference</span>
+                <input
+                  autoFocus
+                  value={linkRef}
+                  onChange={(e) => setLinkRef(e.target.value)}
+                  placeholder="Enter your default account number"
+                  className="h-12 w-full rounded-2xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:border-[var(--iute-red)] focus:ring-2 focus:ring-[var(--iute-red)]/20"
+                />
+              </label>
+              <PrimaryButton disabled={!linkRef.trim()} onClick={confirmLink}>Link Biller</PrimaryButton>
+              <button onClick={() => setLinking(null)} className="tap w-full text-center text-sm font-bold text-[var(--iute-text-soft)]">
+                Back to search
+              </button>
+            </>
+          )}
         </div>
       )}
     </BottomSheet>
