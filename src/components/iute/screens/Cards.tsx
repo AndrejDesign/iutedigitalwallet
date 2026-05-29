@@ -100,20 +100,10 @@ export function Cards() {
           <p className="text-[11px] font-medium text-[var(--iute-text-soft)]">This Month</p>
           <p className="mt-1 text-[11px] font-medium text-[var(--iute-text-soft)]">Avg: 541 ден each</p>
         </Card>
-        <Card className="col-span-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Spending by Category</p>
-          <div className="mt-3 space-y-2">
-            {CARD_CATEGORIES.map((c) => (
-              <div key={c.label} className="flex items-center gap-3">
-                <span className="w-24 text-xs font-bold text-[var(--iute-text)]">{c.icon} {c.label}</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--iute-fog)]">
-                  <div className="h-full rounded-full bg-[var(--iute-red)]" style={{ width: `${c.pct}%` }} />
-                </div>
-                <span className="w-16 text-right font-mono text-[11px] font-bold text-[var(--iute-text)]">{c.amount.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div className="col-span-2">
+          <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Spending by Category</p>
+          <CategoryBento />
+        </div>
       </div>
 
       {/* AI Insight */}
