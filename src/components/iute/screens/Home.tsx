@@ -1,27 +1,25 @@
 import { useState } from "react";
 import {
   Bell, Moon, Sun, ArrowUpRight, ArrowDownLeft, Building2, Wallet,
-  RefreshCw, Lock, ShoppingBag, Loader2,
+  Lock, ShoppingBag, Loader2, Plus, Send,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
-import { Card, Chip, BottomSheet, PrimaryButton } from "../ui";
+import { Card, BottomSheet, PrimaryButton } from "../ui";
 import { TRANSACTIONS } from "../mockData";
+import { FxHub } from "../flows/FxHub";
+import { AddMoneySheet, SendMoneySheet, RequestMoneySheet } from "../flows/MoneyFlows";
 
 export function Home() {
   const { state, dispatch, toast, go } = useStore();
   const [kycOpen, setKycOpen] = useState(false);
-  const [swapAmt, setSwapAmt] = useState("1230");
-  const [spinning, setSpinning] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [sendOpen, setSendOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
   const [startY, setStartY] = useState<number | null>(null);
 
   const mkdToEur = (state.balanceMKD / state.rate).toFixed(2);
-
-  function onSwap() {
-    setSpinning(true);
-    setTimeout(() => setSpinning(false), 600);
-  }
 
   function onRefresh() {
     if (refreshing) return;
@@ -38,7 +36,7 @@ export function Home() {
 
   return (
     <div
-      className="min-h-screen bg-[var(--iute-bg)] pb-32"
+      className="min-h-screen bg-[var(--iute-bg)] pb-32 pt-12"
       onTouchStart={(e) => setStartY(e.touches[0].clientY)}
       onTouchMove={(e) => {
         if (startY != null && window.scrollY === 0) {
@@ -58,7 +56,7 @@ export function Home() {
         </div>
       )}
 
-      <header className="flex items-center justify-between px-5 pt-6">
+      <header className="flex items-center justify-between px-5 pt-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Good morning</p>
           <h1 className="text-xl font-extrabold text-[var(--iute-text)]">Anja 👋</h1>
@@ -84,8 +82,12 @@ export function Home() {
             <p className="mt-2 font-mono text-[36px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
             <p className="mt-1 text-sm font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
             <div className="mt-5 flex gap-3">
-              <button className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)]">+ Add Money</button>
-              <button className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)]">➤ Send Money</button>
+              <button onClick={() => setAddOpen(true)} className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)] inline-flex items-center justify-center gap-1.5">
+                <Plus size={16} strokeWidth={3} /> Add Money
+              </button>
+              <button onClick={() => setSendOpen(true)} className="tap flex-1 rounded-2xl bg-white py-3 text-sm font-bold text-[var(--iute-red)] inline-flex items-center justify-center gap-1.5">
+                <Send size={16} strokeWidth={2.5} /> Send Money
+              </button>
             </div>
             <button onClick={() => setKycOpen(true)} className="tap absolute right-0 top-0 rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
               Level {state.tier} ●
@@ -97,12 +99,12 @@ export function Home() {
       {/* Quick actions */}
       <div className="mx-4 mt-4 grid grid-cols-4 gap-2 rounded-3xl bg-[var(--iute-surface)] p-4">
         {[
-          { Icon: ArrowUpRight, label: "Send" },
-          { Icon: ArrowDownLeft, label: "Request" },
-          { Icon: Building2, label: "Pay Bill" },
-          { Icon: Wallet, label: "Top Up" },
-        ].map(({ Icon, label }) => (
-          <button key={label} className="tap flex flex-col items-center gap-2" onClick={() => toast(`${label} coming next…`)}>
+          { Icon: ArrowUpRight, label: "Send",    onClick: () => setSendOpen(true) },
+          { Icon: ArrowDownLeft, label: "Request", onClick: () => setRequestOpen(true) },
+          { Icon: Building2,    label: "Pay Bill", onClick: () => toast("Pay Bill coming next…") },
+          { Icon: Wallet,       label: "Top Up",   onClick: () => setAddOpen(true) },
+        ].map(({ Icon, label, onClick }) => (
+          <button key={label} className="tap flex min-h-[48px] flex-col items-center gap-2" onClick={onClick} aria-label={label}>
             <span className="flex h-[60px] w-[60px] items-center justify-center rounded-2xl bg-[var(--iute-cloud)] text-[var(--iute-red)]">
               <Icon size={24} strokeWidth={2.4} />
             </span>
@@ -113,31 +115,7 @@ export function Home() {
 
       {/* Bento grid */}
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
-        <Card className="col-span-2">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Instant Swap</p>
-            <span className="font-mono text-[11px] font-bold text-[var(--iute-text-soft)]">1 EUR = {state.rate} ден</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-2xl bg-[var(--iute-fog)] p-3">
-              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">MKD</p>
-              <input
-                value={swapAmt}
-                onChange={(e) => setSwapAmt(e.target.value.replace(/[^\d.]/g, ""))}
-                className="w-full bg-transparent font-mono text-xl font-extrabold text-[var(--iute-text)] outline-none"
-              />
-            </div>
-            <button onClick={onSwap} className="tap flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--iute-red)] text-white">
-              <RefreshCw size={20} className={spinning ? "animate-spin" : ""} />
-            </button>
-            <div className="flex-1 rounded-2xl bg-[var(--iute-cloud)] p-3">
-              <p className="text-[10px] font-bold uppercase text-[var(--iute-text-soft)]">EUR</p>
-              <p className="font-mono text-xl font-extrabold text-[var(--iute-text)]">
-                {(((+swapAmt || 0) / state.rate) || 0).toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </Card>
+        <FxHub />
 
         <Card>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">iutePlus</p>
@@ -226,6 +204,10 @@ export function Home() {
           )}
         </div>
       </BottomSheet>
+
+      <AddMoneySheet open={addOpen} onClose={() => setAddOpen(false)} />
+      <SendMoneySheet open={sendOpen} onClose={() => setSendOpen(false)} />
+      <RequestMoneySheet open={requestOpen} onClose={() => setRequestOpen(false)} />
     </div>
   );
 }
