@@ -31,3 +31,46 @@ export const CHALLENGES = [
   "💸 Refer a friend → Earn 500 iutePlus pts each!",
   "🏆 Top splitter this week gets double cashback!",
 ];
+
+export interface Contact { id: string; name: string; phone: string; color: string; flag: string; currency: "MKD" | "EUR" | "USD" | "GBP" | "CHF" }
+export const CONTACTS: Contact[] = [
+  { id: "marko",  name: "Marko K.", phone: "+389 71 234 100", color: "#D8252C", flag: "🇲🇰", currency: "MKD" },
+  { id: "sara",   name: "Sara P.",  phone: "+49 151 22456",   color: "#5A0917", flag: "🇩🇪", currency: "EUR" },
+  { id: "bojan",  name: "Bojan T.", phone: "+44 7700 900123", color: "#2D2D2D", flag: "🇬🇧", currency: "GBP" },
+  { id: "elena",  name: "Elena R.", phone: "+41 79 555 7788", color: "#0d6e6e", flag: "🇨🇭", currency: "CHF" },
+  { id: "ana",    name: "Ana V.",   phone: "+1 415 555 0199", color: "#346751", flag: "🇺🇸", currency: "USD" },
+];
+
+export type FxCode = "MKD" | "EUR" | "USD" | "GBP" | "CHF" | "TRY" | "AUD";
+export const FX_LIST: { code: FxCode; flag: string; name: string }[] = [
+  { code: "MKD", flag: "🇲🇰", name: "Macedonian Denar" },
+  { code: "EUR", flag: "🇪🇺", name: "Euro" },
+  { code: "USD", flag: "🇺🇸", name: "US Dollar" },
+  { code: "GBP", flag: "🇬🇧", name: "British Pound" },
+  { code: "CHF", flag: "🇨🇭", name: "Swiss Franc" },
+  { code: "TRY", flag: "🇹🇷", name: "Turkish Lira" },
+  { code: "AUD", flag: "🇦🇺", name: "Australian Dollar" },
+];
+// rates expressed as "1 MKD = X <code>"
+export const FX_RATES: Record<FxCode, number> = {
+  MKD: 1,
+  EUR: 0.01625,
+  USD: 0.01768,
+  GBP: 0.01394,
+  CHF: 0.00143,
+  TRY: 0.56200,
+  AUD: 0.02740,
+};
+
+export const CARD_INSIGHTS = [
+  { title: "iute Insight", body: "You spend 34% more on weekends. Setting a weekend daily limit of 2,000 ден could save you ≈1,400 ден/month.", cta: "Set Weekend Limit" },
+  { title: "iute Insight", body: "You haven't used this card in 7 days. Freeze it to stay safe?", cta: "Freeze Card" },
+  { title: "iute Insight", body: "You're 1,200 ден away from unlocking 7% cashback tier this month.", cta: "View Tiers" },
+];
+
+export const CARD_CATEGORIES = [
+  { icon: "🛒", label: "Shopping",      amount: 4200, pct: 80 },
+  { icon: "☕", label: "Food & Drink",  amount: 3100, pct: 60 },
+  { icon: "🎵", label: "Entertainment", amount: 1450, pct: 30 },
+  { icon: "💳", label: "Transfers",     amount:  980, pct: 20 },
+];

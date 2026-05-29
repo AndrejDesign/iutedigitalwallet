@@ -69,28 +69,37 @@ export function Chip({ children, className = "" }: { children: ReactNode; classN
 export function BottomSheet({
   open, onClose, title, children,
 }: { open: boolean; onClose: () => void; title?: string; children: ReactNode }) {
-  const [mounted, setMounted] = useState(open);
-  useEffect(() => { if (open) setMounted(true); }, [open]);
-  if (!mounted && !open) return null;
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+  if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <button
-        aria-label="Close"
+        type="button"
+        aria-label="Close sheet"
         onClick={onClose}
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/50"
       />
-      <div
-        className="sheet-in relative w-full max-w-[390px] rounded-t-3xl bg-[var(--iute-surface)] p-5 pb-8 text-[var(--iute-text)] max-h-[85vh] overflow-y-auto"
-        onAnimationEnd={() => { if (!open) setMounted(false); }}
-      >
-        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-black/15" />
-        <div className="mb-3 flex items-center justify-between">
-          {title ? <h3 className="text-lg font-bold">{title}</h3> : <span />}
-          <button onClick={onClose} className="tap rounded-full p-1.5 text-[var(--iute-text-soft)]">
-            <X size={20} />
-          </button>
+      <div className="sheet-in relative w-full max-w-[390px] rounded-t-3xl bg-[var(--iute-surface)] text-[var(--iute-text)] max-h-[92vh] flex flex-col shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.4)]">
+        <div className="relative shrink-0 px-5 pt-3 pb-2">
+          <div className="mx-auto h-1 w-10 rounded-full bg-black/20" />
+          <div className="mt-3 flex items-center justify-between min-h-[44px]">
+            {title ? <h3 className="text-lg font-extrabold">{title}</h3> : <span />}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="tap flex h-11 w-11 items-center justify-center rounded-full bg-[var(--iute-fog)] text-[var(--iute-text)] -mr-1"
+            >
+              <X size={22} strokeWidth={2.4} />
+            </button>
+          </div>
         </div>
-        {children}
+        <div className="flex-1 overflow-y-auto px-5 pb-8">{children}</div>
       </div>
     </div>
   );
