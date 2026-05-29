@@ -46,9 +46,10 @@ export function Toggle({
 }: { on: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={on}
-      onClick={() => onChange(!on)}
+      onClick={(e) => { e.stopPropagation(); onChange(!on); }}
       className={`tap relative h-7 w-[52px] rounded-full transition-colors duration-200 ${on ? "bg-[var(--iute-red)]" : "bg-black/15"}`}
     >
       <span
