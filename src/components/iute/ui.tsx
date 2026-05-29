@@ -50,10 +50,11 @@ export function Toggle({
       role="switch"
       aria-checked={on}
       onClick={(e) => { e.stopPropagation(); onChange(!on); }}
-      className={`tap relative h-7 w-[52px] rounded-full transition-colors duration-200 ${on ? "bg-[var(--iute-red)]" : "bg-black/15"}`}
+      className={`tap relative box-border inline-block h-7 w-[52px] shrink-0 rounded-full border-0 p-0 align-middle transition-colors duration-200 ${on ? "bg-[var(--iute-red)]" : "bg-black/15"}`}
     >
       <span
-        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ${on ? "translate-x-[26px]" : "translate-x-0.5"}`}
+        aria-hidden
+        className={`pointer-events-none absolute top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-white shadow transition-[left] duration-200 ${on ? "left-[24px]" : "left-[2px]"}`}
       />
     </button>
   );

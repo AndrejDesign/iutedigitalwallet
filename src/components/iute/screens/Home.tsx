@@ -255,10 +255,10 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const [paid, setPaid] = useState(false);
 
   const BILLERS = [
-    { name: "EVN Electricity", Icon: Zap,    color: "#F59E0B" },
-    { name: "Telekom Internet", Icon: Wifi,  color: "#3B82F6" },
-    { name: "Vodovod Water",    Icon: Droplet, color: "#0EA5E9" },
-    { name: "Makpetrol Gas",    Icon: Flame, color: "#EF4444" },
+    { name: "EVN Electricity",  Icon: Zap,     color: "#D8252C" }, // iute red
+    { name: "Telekom Internet", Icon: Wifi,    color: "#5A0917" }, // iute merlot
+    { name: "Vodovod Water",    Icon: Droplet, color: "#2D2D2D" }, // iute black
+    { name: "Makpetrol Gas",    Icon: Flame,   color: "#C9A84C" }, // parchment gold
   ];
 
   function reset() { setBiller(null); setRef(""); setAmt(""); setPaid(false); }
