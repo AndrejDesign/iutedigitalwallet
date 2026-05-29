@@ -101,7 +101,7 @@ export function Cards() {
           <p className="mt-1 text-[11px] font-medium text-[var(--iute-text-soft)]">Avg: 541 ден each</p>
         </Card>
         <div className="col-span-2">
-          <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Spending by Category</p>
+          <h3 className="mb-2 text-base font-extrabold text-[var(--iute-text)]">Spending by Category</h3>
           <CategoryBento />
         </div>
       </div>
