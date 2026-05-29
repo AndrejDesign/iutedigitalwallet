@@ -51,13 +51,6 @@ export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: bo
               </span>
             )}
           </button>
-          <button
-            onClick={() => go("account")}
-            aria-label="Profile"
-            className="tap flex h-9 w-9 items-center justify-center rounded-full bg-[var(--iute-red)] text-[11px] font-extrabold text-white ring-2 ring-[var(--iute-bg)]"
-          >
-            AA
-          </button>
         </div>
       </header>
 
