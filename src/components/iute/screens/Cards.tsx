@@ -50,7 +50,7 @@ export function Cards() {
           </div>
           <p className="font-mono text-[22px] tracking-[0.2em]">•••• •••• •••• {last4}</p>
           <div className="flex items-end justify-between font-mono text-[11px] uppercase">
-            <span>Anja Angelovska</span>
+            <span>{(state.userName || "YOUR NAME").toUpperCase()}</span>
             <span>09/28</span>
             <span className="rounded-md bg-white/15 px-1.5 py-0.5 ring-1 ring-white/30">
               {state.cardFrozen ? "[FROZEN]" : "[ACTIVE]"}
@@ -208,7 +208,7 @@ function AddCardSheet({ open, onClose, onAdded }: { open: boolean; onClose: () =
 
       {type === "physical" && (
         <div className="space-y-3">
-          <input defaultValue="Anja Angelovska" placeholder="Full name" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+          <input defaultValue={state.userName} placeholder="Full name" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
           <input defaultValue="ул. Македонија 24, Скопје" placeholder="Address" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
           <input defaultValue="1000" placeholder="Postal code" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
           <PrimaryButton onClick={() => { onAdded("9012"); close(); }}>Ship to Me</PrimaryButton>
