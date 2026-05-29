@@ -69,10 +69,10 @@ export const CARD_INSIGHTS = [
 ];
 
 export const CARD_CATEGORIES = [
-  { icon: "🛒", label: "Shopping",      amount: 4200, color: "#FF6A00", badge: "🔥 Splurging" }, // EVN orange
-  { icon: "☕", label: "Food & Drink",  amount: 3100, color: "#E63946" },                          // Makpetrol coral
-  { icon: "🎵", label: "Entertainment", amount: 1450, color: "#0066B3" },                          // Telekom blue
-  { icon: "💳", label: "Transfers",     amount:  980, color: "#22B8CF", badge: "💸 Minimal" },     // Vodovod cyan
+  { icon: "🛒", label: "Shopping",      amount: 4200, color: "#D8252C", badge: "🔥 Splurging" }, // iute red
+  { icon: "☕", label: "Food & Drink",  amount: 3100, color: "#5A0917" },                         // iute merlot
+  { icon: "🎵", label: "Entertainment", amount: 1450, color: "#2D2D2D" },                         // iute black
+  { icon: "💳", label: "Transfers",     amount:  980, color: "#C9A84C", badge: "💸 Minimal" },    // warm parchment gold
 ];
 
 export const PARTNER_VOUCHERS = [
