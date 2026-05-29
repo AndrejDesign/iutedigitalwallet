@@ -95,6 +95,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "MyIute Pay",
+              url: "https://iutedigitalwallet.lovable.app",
+              logo: "https://iutedigitalwallet.lovable.app/favicon.ico",
+            },
+            {
+              "@type": "WebSite",
+              name: "MyIute Pay",
+              url: "https://iutedigitalwallet.lovable.app",
+              description: "Social-first digital wallet for North Macedonia — send cash like a DM, split bills, and build streaks.",
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

@@ -68,14 +68,14 @@ export function Home() {
       <header className="flex items-center justify-between px-5 pt-2">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Good morning</p>
-          <h1 className="text-xl font-extrabold text-[var(--iute-text)]">Anja 👋</h1>
+          <h1 className="text-xl font-extrabold text-[var(--iute-text)]">My Wallet — Anja 👋</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="tap relative rounded-2xl bg-[var(--iute-surface)] p-2.5">
+          <button aria-label="Notifications" className="tap relative rounded-2xl bg-[var(--iute-surface)] p-2.5">
             <Bell size={20} className="text-[var(--iute-text)]" />
             <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold text-white">3</span>
           </button>
-          <button onClick={() => dispatch({ type: "TOGGLE_DARK" })} className="tap rounded-2xl bg-[var(--iute-surface)] p-2.5">
+          <button onClick={() => dispatch({ type: "TOGGLE_DARK" })} aria-label={state.dark ? "Switch to light mode" : "Switch to dark mode"} className="tap rounded-2xl bg-[var(--iute-surface)] p-2.5">
             {state.dark ? <Sun size={20} className="text-[var(--iute-text)]" /> : <Moon size={20} className="text-[var(--iute-text)]" />}
           </button>
         </div>
@@ -123,6 +123,7 @@ export function Home() {
       </div>
 
       {/* Bento grid */}
+      <h2 className="sr-only">Wallet Overview</h2>
       <div className="grid grid-cols-2 gap-3 px-4 pt-4">
         <Card className="col-span-2">
           <div className="mb-3 flex items-center justify-between">
