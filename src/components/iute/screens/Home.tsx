@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   ArrowUpRight, ArrowDownLeft, Building2, Wallet,
   Lock, ShoppingBag, Loader2, Plus, Send, ArrowLeftRight, Zap, Wifi, Droplet,
-  ScanLine, Camera, ChevronRight, Fingerprint, Check,
+  ScanLine, Camera, ChevronRight, Fingerprint, Check, Search, Flame, Tv, Phone, Trash2,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
 import { Card, BottomSheet, PrimaryButton } from "../ui";
