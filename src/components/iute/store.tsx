@@ -12,7 +12,6 @@ import type { AppState, ScreenKey, Tier, Txn } from "./types";
 
 type Action =
   | { type: "SET_SCREEN"; screen: ScreenKey }
-  | { type: "TOGGLE_DARK" }
   | { type: "SET_TIER"; tier: Tier }
   | { type: "SET_BALANCE"; balance: number }
   | { type: "SET_RATE"; rate: number }
@@ -22,10 +21,10 @@ type Action =
   | { type: "SET_LIMIT"; limit: number }
   | { type: "INC_STREAK"; by: number }
   | { type: "SET_TXN"; txn: Txn | null }
-  | { type: "TOAST"; msg: string | null };
+  | { type: "TOAST"; msg: string | null }
+  | { type: "READ_NOTIFICATIONS" };
 
 const initial: AppState = {
-  dark: false,
   screen: "splash",
   tier: 1,
   balanceMKD: 8450,
@@ -37,12 +36,18 @@ const initial: AppState = {
   streakDays: 7,
   selectedTxn: null,
   toast: null,
+  notifications: [
+    { id: "n1", icon: "money",  title: "Marko paid you 350 ден",  body: "Split: Pizza night 🍕",      when: "2m ago",  read: false },
+    { id: "n2", icon: "squad",  title: "Streak unlocked — 7 days", body: "5% cashback active today.",  when: "1h ago",  read: false },
+    { id: "n3", icon: "card",   title: "Card payment approved",    body: "Skopje Coffee Lab · 280 ден", when: "3h ago", read: false },
+    { id: "n4", icon: "promo",  title: "1,450 iutePlus points",    body: "You can redeem rewards now.", when: "Yesterday", read: true  },
+    { id: "n5", icon: "alert",  title: "New login from Skopje",    body: "iPhone · Today 09:14",        when: "Yesterday", read: true  },
+  ],
 };
 
 function reducer(s: AppState, a: Action): AppState {
   switch (a.type) {
     case "SET_SCREEN": return { ...s, screen: a.screen };
-    case "TOGGLE_DARK": return { ...s, dark: !s.dark };
     case "SET_TIER": return { ...s, tier: a.tier };
     case "SET_BALANCE": return { ...s, balanceMKD: a.balance };
     case "SET_RATE": return { ...s, rate: a.rate };
@@ -53,6 +58,7 @@ function reducer(s: AppState, a: Action): AppState {
     case "INC_STREAK": return { ...s, streakDays: s.streakDays + a.by };
     case "SET_TXN": return { ...s, selectedTxn: a.txn };
     case "TOAST": return { ...s, toast: a.msg };
+    case "READ_NOTIFICATIONS": return { ...s, notifications: s.notifications.map((n) => ({ ...n, read: true })) };
   }
 }
 

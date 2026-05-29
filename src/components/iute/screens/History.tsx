@@ -41,7 +41,7 @@ export function History() {
   }, [filtered]);
 
   return (
-    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-32 pt-12">
+    <div className="min-h-screen bg-[var(--iute-bg)] px-4 pb-24 pt-2">
       <header className="flex items-center gap-3 py-2 pt-2">
         <button onClick={() => go("home")} className="tap rounded-2xl bg-[var(--iute-surface)] p-2">
           <ArrowLeft size={20} className="text-[var(--iute-text)]" />
