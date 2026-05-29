@@ -15,17 +15,17 @@ export function Onboarding() {
   const slide = SLIDES[i];
   const Icon = slide.Icon;
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: slide.bg }}>
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-7 pt-12 text-center text-[var(--iute-black)]">
-        <div className="spring-in flex h-40 w-40 items-center justify-center rounded-[40px] bg-white shadow-xl">
-          <Icon size={64} className="text-[var(--iute-red)]" strokeWidth={2.2} />
+    <div className="flex h-full flex-col" style={{ background: slide.bg }}>
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-7 pt-8 text-center text-[var(--iute-black)]">
+        <div className="spring-in flex h-36 w-36 items-center justify-center rounded-[40px] bg-white shadow-xl">
+          <Icon size={56} className="text-[var(--iute-red)]" strokeWidth={2.2} />
         </div>
         <div className="space-y-3">
-          <h2 className="text-3xl font-extrabold leading-tight">{slide.title}</h2>
+          <h2 className="text-2xl font-extrabold leading-tight">{slide.title}</h2>
           <p className="text-base font-medium opacity-70">{slide.sub}</p>
         </div>
       </div>
-      <div className="flex justify-center gap-2 pb-6">
+      <div className="flex justify-center gap-2 pb-4">
         {SLIDES.map((_, idx) => (
           <button
             key={idx}
@@ -35,7 +35,7 @@ export function Onboarding() {
           />
         ))}
       </div>
-      <div className="px-6 pb-10">
+      <div className="px-6 pb-6">
         <PrimaryButton onClick={() => (i < SLIDES.length - 1 ? setI(i + 1) : go("register"))}>
           <span className="inline-flex items-center justify-center gap-2">
             {i < SLIDES.length - 1 ? "Next" : "Get Started"} <ArrowRight size={18} />

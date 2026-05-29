@@ -20,11 +20,12 @@ function Shell() {
   const chromeless = ["splash", "onboarding", "register", "scan"];
   const showHeader = !chromeless.includes(state.screen);
   const showNav = !["splash", "onboarding", "register"].includes(state.screen);
+  const isChromeless = ["splash", "onboarding", "register"].includes(state.screen);
 
   return (
     <div className="iute-phone relative flex h-full w-full flex-col overflow-hidden bg-[var(--iute-bg)] text-[var(--iute-text)] transition-colors duration-200">
       {showHeader && <GlobalHeader open={notifOpen} setOpen={setNotifOpen} />}
-      <div className="no-scrollbar relative flex-1 overflow-y-auto overflow-x-hidden">
+      <div className={`no-scrollbar relative flex-1 overflow-x-hidden ${isChromeless ? "overflow-hidden" : "overflow-y-auto"}`}>
       {state.screen === "splash" && <Splash />}
       {state.screen === "onboarding" && <Onboarding />}
       {state.screen === "register" && <Register />}
