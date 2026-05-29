@@ -57,12 +57,12 @@ export function History() {
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search transactions..." className="flex-1 bg-transparent text-sm font-bold text-[var(--iute-text)] outline-none placeholder:text-[var(--iute-text-soft)]" />
       </div>
 
-      <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+      <div className="mt-3 grid grid-cols-4 gap-2">
         {FILTERS.map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`tap shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold ${filter === f ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}
+            className={`tap rounded-full px-3 py-2 text-[11px] font-bold ${filter === f ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}
           >
             {f}
           </button>

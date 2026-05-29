@@ -79,9 +79,9 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
               placeholder="0.00 ден"
               className="h-14 w-full rounded-3xl bg-[var(--iute-fog)] px-5 text-center font-mono text-2xl font-extrabold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
             />
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap gap-2 pb-1">
               {[500, 1000, 2500, 5000].map((v) => (
-                <button key={v} onClick={() => setAmount(String((+amount || 0) + v))} className="tap shrink-0 rounded-full bg-[var(--iute-cloud)] px-3 py-1.5 text-xs font-bold text-[var(--iute-text)]">
+                <button key={v} onClick={() => setAmount(String((+amount || 0) + v))} className="tap rounded-full bg-[var(--iute-cloud)] px-3 py-1.5 text-xs font-bold text-[var(--iute-text)]">
                   +{v.toLocaleString()}
                 </button>
               ))}
@@ -153,9 +153,9 @@ export function SendMoneySheet({ open, onClose }: { open: boolean; onClose: () =
           </div>
           <div>
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Recent Contacts</p>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="grid grid-cols-4 gap-3 pb-2">
               {filtered.map((c) => (
-                <button key={c.id} onClick={() => { setRecipient(c); setStep(2); }} className="tap flex w-16 shrink-0 flex-col items-center gap-1.5">
+                <button key={c.id} onClick={() => { setRecipient(c); setStep(2); }} className="tap flex flex-col items-center gap-1.5">
                   <span className="flex h-14 w-14 items-center justify-center rounded-full text-white text-sm font-extrabold" style={{ background: c.color }}>
                     {c.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
                   </span>
@@ -182,9 +182,9 @@ export function SendMoneySheet({ open, onClose }: { open: boolean; onClose: () =
             </div>
             <button onClick={() => setStep(1)} className="tap text-xs font-bold text-[var(--iute-red)]">Change</button>
           </div>
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="grid grid-cols-4 gap-2">
             {SEND_CCY.map((c) => (
-              <button key={c} onClick={() => setCcy(c)} className={`tap shrink-0 rounded-full px-4 py-2 text-xs font-bold ${ccy === c ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}>
+              <button key={c} onClick={() => setCcy(c)} className={`tap rounded-full px-3 py-2 text-xs font-bold ${ccy === c ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}>
                 {c} {c === "MKD" ? "ден" : c === "EUR" ? "€" : c === "USD" ? "$" : "£"}
               </button>
             ))}
@@ -285,9 +285,9 @@ export function RequestMoneySheet({ open, onClose }: { open: boolean; onClose: (
       {step === 2 && recipient && (
         <div className="space-y-4">
           <p className="text-sm font-bold text-[var(--iute-text)]">Requesting from <span className="text-[var(--iute-red)]">{recipient.name}</span></p>
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="grid grid-cols-4 gap-2">
             {SEND_CCY.map((c) => (
-              <button key={c} onClick={() => setCcy(c)} className={`tap shrink-0 rounded-full px-4 py-2 text-xs font-bold ${ccy === c ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}>
+              <button key={c} onClick={() => setCcy(c)} className={`tap rounded-full px-3 py-2 text-xs font-bold ${ccy === c ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-fog)] text-[var(--iute-text)]"}`}>
                 {c}
               </button>
             ))}
