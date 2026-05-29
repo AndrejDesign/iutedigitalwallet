@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, History, ScanLine } from "lucide-react";
+import { ArrowLeft, History, ScanLine, Flashlight } from "lucide-react";
 import { useStore, fmtMKD } from "../store";
 import { BottomSheet, PrimaryButton } from "../ui";
 
@@ -13,6 +13,7 @@ export function Scan() {
   const [manualOpen, setManualOpen] = useState(false);
   const [manualAmt, setManualAmt] = useState("");
   const [manualRecip, setManualRecip] = useState("");
+  const [torch, setTorch] = useState(false);
 
   function simulate() {
     const big = Math.random() > 0.5;
@@ -48,14 +49,17 @@ export function Scan() {
   const bnplEligible = state.tier === 2 && confirm && confirm.amount > 500;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#1A1A1A] pb-32 text-white">
+    <div className={`relative flex min-h-screen flex-col pb-32 text-white transition-colors duration-300 ${torch ? "bg-[#3a3320]" : "bg-[#1A1A1A]"}`}>
+      {torch && (
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_55%,rgba(255,225,150,0.35),transparent_55%)]" />
+      )}
       <header className="flex items-center justify-between bg-[var(--iute-red)] px-4 py-4">
         <button onClick={() => go("home")} className="tap"><ArrowLeft size={22} /></button>
         <h1 className="text-base font-extrabold uppercase tracking-wide">Scan to Pay</h1>
         <button className="tap"><History size={22} /></button>
       </header>
 
-      <div className="relative flex flex-1 flex-col items-center justify-center px-6">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
         {/* reticle */}
         <div className="relative h-[220px] w-[220px]">
           {([
@@ -71,6 +75,16 @@ export function Scan() {
           </div>
         </div>
         <p className="mt-6 text-sm font-medium opacity-80">Point camera at merchant QR code</p>
+
+        <button
+          onClick={() => { setTorch((t) => !t); toast(torch ? "Flashlight off" : "Flashlight on 🔦"); }}
+          aria-label="Toggle flashlight"
+          aria-pressed={torch}
+          className={`tap mt-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-extrabold uppercase tracking-wide ring-1 transition-colors ${torch ? "bg-yellow-300 text-black ring-yellow-200 shadow-[0_0_24px_rgba(253,224,71,0.6)]" : "bg-white/10 text-white ring-white/20"}`}
+        >
+          <Flashlight size={16} strokeWidth={2.5} />
+          {torch ? "Flashlight On" : "Flashlight"}
+        </button>
 
         <div className="mt-8 w-full max-w-[300px]">
           <PrimaryButton onClick={simulate}>Tap to Simulate Scan</PrimaryButton>
