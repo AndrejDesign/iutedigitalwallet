@@ -25,7 +25,7 @@ export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: bo
 
   return (
     <>
-      <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-[var(--iute-divider)] bg-[var(--iute-bg)]/90 px-4 backdrop-blur-md">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[var(--iute-divider)] bg-[var(--iute-bg)]/90 px-4 pt-2 backdrop-blur-md">
         <span className="text-sm font-extrabold tracking-tight text-[var(--iute-text)]">
           iute<span className="text-[var(--iute-red)]">buddy</span>
         </span>
@@ -46,7 +46,7 @@ export function GlobalHeader({ open, setOpen }: { open: boolean; setOpen: (v: bo
           >
             <Bell size={18} className="text-[var(--iute-text)]" />
             {unread > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold leading-none text-white">
+              <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--iute-red)] px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[var(--iute-bg)]">
                 {unread}
               </span>
             )}
