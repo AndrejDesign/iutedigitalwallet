@@ -8,7 +8,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import type { AppState, ScreenKey, Tier, Txn } from "./types";
+import type { AppState, ScreenKey, Tier, Txn, WalletCard } from "./types";
 
 type Action =
   | { type: "SET_SCREEN"; screen: ScreenKey }
@@ -17,7 +17,9 @@ type Action =
   | { type: "SET_BALANCE"; balance: number }
   | { type: "SET_RATE"; rate: number }
   | { type: "SET_POINTS"; points: number }
-  | { type: "TOGGLE_FREEZE"; value?: boolean }
+  | { type: "ADD_CARD"; card: WalletCard }
+  | { type: "SET_ACTIVE_CARD"; id: string }
+  | { type: "TOGGLE_CARD_FREEZE"; id: string; value?: boolean }
   | { type: "TOGGLE_PANIC" }
   | { type: "SET_LIMIT"; limit: number }
   | { type: "INC_STREAK"; by: number }
@@ -32,7 +34,6 @@ const initial: AppState = {
   balanceMKD: 8450,
   rate: 61.5,
   iutePoints: 1450,
-  cardFrozen: false,
   panicMode: true,
   dailyLimit: 15000,
   streakDays: 7,
@@ -45,6 +46,10 @@ const initial: AppState = {
     { id: "n4", icon: "promo",  title: "1,450 iutePlus points",    body: "You can redeem rewards now.", when: "Yesterday", read: true  },
     { id: "n5", icon: "alert",  title: "New login from Skopje",    body: "iPhone · Today 09:14",        when: "Yesterday", read: true  },
   ],
+  cards: [
+    { id: "default", last4: "8942", name: "", exp: "09/28", brand: "iute", kind: "virtual", frozen: false },
+  ],
+  activeCardId: "default",
 };
 
 function reducer(s: AppState, a: Action): AppState {
@@ -55,7 +60,12 @@ function reducer(s: AppState, a: Action): AppState {
     case "SET_BALANCE": return { ...s, balanceMKD: a.balance };
     case "SET_RATE": return { ...s, rate: a.rate };
     case "SET_POINTS": return { ...s, iutePoints: a.points };
-    case "TOGGLE_FREEZE": return { ...s, cardFrozen: a.value ?? !s.cardFrozen };
+    case "ADD_CARD": return { ...s, cards: [...s.cards, a.card], activeCardId: a.card.id };
+    case "SET_ACTIVE_CARD": return { ...s, activeCardId: a.id };
+    case "TOGGLE_CARD_FREEZE": return {
+      ...s,
+      cards: s.cards.map((c) => c.id === a.id ? { ...c, frozen: a.value ?? !c.frozen } : c),
+    };
     case "TOGGLE_PANIC": return { ...s, panicMode: !s.panicMode };
     case "SET_LIMIT": return { ...s, dailyLimit: a.limit };
     case "INC_STREAK": return { ...s, streakDays: s.streakDays + a.by };
