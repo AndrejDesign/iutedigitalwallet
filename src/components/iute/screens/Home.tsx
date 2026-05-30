@@ -102,8 +102,6 @@ export function Home() {
         </div>
       </div>
 
-      {/* My Cards carousel */}
-      <MyCardsCarousel />
 
       {/* Quick actions */}
       <div className="mx-4 mt-4 grid grid-cols-4 gap-2 rounded-3xl bg-[var(--iute-surface)] p-4">
