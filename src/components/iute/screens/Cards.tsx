@@ -1,42 +1,35 @@
 import { useState } from "react";
 import {
-  Plus, Snowflake, Flame, CreditCard as CCIcon, Sparkles,
+  Plus, Snowflake, Flame, CreditCard as CCIcon, Sparkles, Info,
 } from "lucide-react";
 import { useStore, fmtMKD } from "../store";
 import { Card, BottomSheet, PrimaryButton, SecondaryButton } from "../ui";
 import { CARD_INSIGHTS, CARD_CATEGORIES } from "../mockData";
-
-type WalletCard = {
-  id: string;
-  last4: string;
-  name: string;
-  exp: string;
-  brand: "iute" | "VISA" | "MC";
-  kind: "virtual" | "existing";
-};
+import type { WalletCard } from "../types";
 
 export function Cards() {
   const { state, dispatch, toast } = useStore();
-  const [cards, setCards] = useState<WalletCard[]>([
-    { id: "default", last4: "8942", name: state.userName || "YOUR NAME", exp: "09/28", brand: "iute", kind: "virtual" },
-  ]);
-  const [activeId, setActiveId] = useState<string>("default");
   const [addOpen, setAddOpen] = useState(false);
   const [insightIdx, setInsightIdx] = useState(0);
   const [insightDismissed, setInsightDismissed] = useState(false);
 
-  const active = cards.find((c) => c.id === activeId) ?? cards[0];
+  const { cards, activeCardId } = state;
+  const active = cards.find((c) => c.id === activeCardId) ?? cards[0];
+  const isIute = active.brand === "iute";
 
   function toggleFreeze() {
-    const newFrozen = !state.cardFrozen;
-    dispatch({ type: "TOGGLE_FREEZE", value: newFrozen });
+    if (!isIute) {
+      toast("🔒 Only iute cards can be frozen from the app.");
+      return;
+    }
+    const newFrozen = !active.frozen;
+    dispatch({ type: "TOGGLE_CARD_FREEZE", id: active.id, value: newFrozen });
     toast(newFrozen ? "❄️ Card frozen — all payments paused." : "🔥 Card unfrozen — ready to use.");
   }
 
-  function addCard(card: Omit<WalletCard, "id">) {
+  function addCard(card: Omit<WalletCard, "id" | "frozen">) {
     const id = `c_${Date.now()}`;
-    setCards((cs) => [...cs, { ...card, id }]);
-    setActiveId(id);
+    dispatch({ type: "ADD_CARD", card: { ...card, id, frozen: false } });
   }
 
   const insight = CARD_INSIGHTS[insightIdx];
@@ -57,9 +50,9 @@ export function Cards() {
       {/* Card graphic */}
       <div
         className="relative h-[220px] w-full overflow-hidden rounded-3xl text-white shadow-2xl transition-colors duration-500"
-        style={{ background: state.cardFrozen ? "var(--iute-red)" : "var(--iute-merlot)" }}
+        style={{ background: active.frozen ? "var(--iute-red)" : "var(--iute-merlot)" }}
       >
-        {state.cardFrozen && (
+        {active.frozen && (
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5" />
         )}
         <div className="absolute inset-0 flex flex-col justify-between p-5">
@@ -72,7 +65,7 @@ export function Cards() {
             <span>{(active.name || state.userName || "YOUR NAME").toUpperCase()}</span>
             <span>{active.exp}</span>
             <span className="rounded-md bg-white/15 px-1.5 py-0.5 ring-1 ring-white/30">
-              {state.cardFrozen ? "[FROZEN]" : "[ACTIVE]"}
+              {active.frozen ? "[FROZEN]" : "[ACTIVE]"}
             </span>
           </div>
         </div>
@@ -82,11 +75,11 @@ export function Cards() {
       {cards.length > 1 && (
         <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
           {cards.map((c) => {
-            const isActive = c.id === activeId;
+            const isActive = c.id === active.id;
             return (
               <button
                 key={c.id}
-                onClick={() => setActiveId(c.id)}
+                onClick={() => dispatch({ type: "SET_ACTIVE_CARD", id: c.id })}
                 className={`tap shrink-0 rounded-2xl px-3 py-2 text-[11px] font-extrabold ring-1 transition ${
                   isActive
                     ? "bg-[var(--iute-red)] text-white ring-[var(--iute-red)]"
@@ -100,14 +93,26 @@ export function Cards() {
         </div>
       )}
 
-      {/* Freeze / Unfreeze button */}
-      <button
-        onClick={toggleFreeze}
-        className={`tap mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-3xl text-sm font-extrabold ${state.cardFrozen ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-surface)] text-[var(--iute-red)] ring-1 ring-[var(--iute-divider)]"}`}
-      >
-        {state.cardFrozen ? <Flame size={18} strokeWidth={2.5} /> : <Snowflake size={18} strokeWidth={2.5} />}
-        {state.cardFrozen ? "Unfreeze Card" : "Freeze Card"}
-      </button>
+      {/* Freeze / Unfreeze button (only iute cards can be frozen) */}
+      {isIute ? (
+        <button
+          onClick={toggleFreeze}
+          className={`tap mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-3xl text-sm font-extrabold ${active.frozen ? "bg-[var(--iute-red)] text-white" : "bg-[var(--iute-surface)] text-[var(--iute-red)] ring-1 ring-[var(--iute-divider)]"}`}
+        >
+          {active.frozen ? <Flame size={18} strokeWidth={2.5} /> : <Snowflake size={18} strokeWidth={2.5} />}
+          {active.frozen ? "Unfreeze Card" : "Freeze Card"}
+        </button>
+      ) : (
+        <div className="mt-4 flex items-start gap-3 rounded-3xl bg-[var(--iute-surface)] p-4 ring-1 ring-[var(--iute-divider)]">
+          <Info size={18} className="mt-0.5 shrink-0 text-[var(--iute-text-soft)]" />
+          <div>
+            <p className="text-sm font-extrabold text-[var(--iute-text)]">Freeze unavailable</p>
+            <p className="mt-0.5 text-[12px] font-medium text-[var(--iute-text-soft)]">
+              This is a linked {active.brand} card, not an iute card. To freeze it, please use your bank's app.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Daily Limit */}
       <Card className="mt-3">
