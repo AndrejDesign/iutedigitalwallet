@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight, ArrowDownLeft, Building2, Wallet,
   Lock, ShoppingBag, Loader2, Plus, Send, ArrowLeftRight, Zap, Wifi, Droplet,
@@ -101,6 +101,9 @@ export function Home() {
           </div>
         </div>
       </div>
+
+      {/* My Cards carousel */}
+      <MyCardsCarousel />
 
       {/* Quick actions */}
       <div className="mx-4 mt-4 grid grid-cols-4 gap-2 rounded-3xl bg-[var(--iute-surface)] p-4">
