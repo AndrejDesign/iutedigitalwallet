@@ -422,27 +422,41 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {[...BILLERS, ...extraBillers].map((b) => (
-              <button
-                key={b.key}
-                onClick={() => pickBiller(b)}
-                className="tap group relative flex h-[132px] flex-col justify-between overflow-hidden rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-4 text-left transition"
-                style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -18px rgba(0,0,0,0.25)" }}
-              >
-                <span
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
-                  style={{ background: b.tint, boxShadow: `0 8px 20px -10px ${b.ring}` }}
-                >
-                  <b.Icon size={22} strokeWidth={2.25} />
-                </span>
-                <span>
-                  <span className="block text-sm font-extrabold leading-tight text-[var(--iute-text)]">{b.name}</span>
-                  <span className="mt-1 block font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--iute-text-soft)]">
-                    Last · {b.saved}
-                  </span>
-                </span>
-              </button>
-            ))}
+            {[...BILLERS, ...extraBillers].map((b) => {
+              const isCustom = b.key.startsWith("custom-");
+              return (
+                <div key={b.key} className="relative">
+                  <button
+                    onClick={() => pickBiller(b)}
+                    className="tap group relative flex h-[132px] w-full flex-col justify-between overflow-hidden rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-4 text-left transition"
+                    style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -18px rgba(0,0,0,0.25)" }}
+                  >
+                    <span
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
+                      style={{ background: b.tint, boxShadow: `0 8px 20px -10px ${b.ring}` }}
+                    >
+                      <b.Icon size={22} strokeWidth={2.25} />
+                    </span>
+                    <span>
+                      <span className="block pr-6 text-sm font-extrabold leading-tight text-[var(--iute-text)]">{b.name}</span>
+                      <span className="mt-1 block font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--iute-text-soft)]">
+                        Last · {b.saved}
+                      </span>
+                    </span>
+                  </button>
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); deleteBiller(b.key); }}
+                      aria-label={`Delete ${b.name}`}
+                      className="tap absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--iute-text)]/8 text-[var(--iute-text-soft)] hover:bg-[var(--iute-red)] hover:text-white"
+                    >
+                      <Trash2 size={14} strokeWidth={2.4} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={() => setStep("addBiller")}
