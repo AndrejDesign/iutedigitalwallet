@@ -200,6 +200,7 @@ function AddCardSheet({
   const [exp, setExp] = useState("");
   const [cvv, setCvv] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [ccy, setCcy] = useState<"MKD" | "EUR">("MKD");
 
   function reset() { setType(null); setNum(""); setName(""); setExp(""); setCvv(""); setSubmitted(false); }
   function close() { onClose(); setTimeout(reset, 250); }
@@ -269,9 +270,19 @@ function AddCardSheet({
             <>
               <p className="text-sm font-bold text-[var(--iute-text)]">Request a new virtual card. Our team will issue it after a quick review.</p>
               <div className="flex gap-2">
-                {(["MKD", "EUR"] as const).map((c) => (
-                  <button key={c} className="tap h-11 flex-1 rounded-2xl bg-[var(--iute-fog)] text-sm font-bold text-[var(--iute-text)] ring-1 ring-[var(--iute-divider)]">{c}</button>
-                ))}
+                {(["MKD", "EUR"] as const).map((c) => {
+                  const active = ccy === c;
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => setCcy(c)}
+                      aria-pressed={active}
+                      className={`tap h-11 flex-1 rounded-2xl text-sm font-bold transition-all ${active ? "bg-[var(--iute-red)] text-white ring-2 ring-[var(--iute-red)]" : "bg-[var(--iute-fog)] text-[var(--iute-text)] ring-1 ring-[var(--iute-divider)]"}`}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
               </div>
               <PrimaryButton onClick={() => { onRequestVirtual(); setSubmitted(true); }}>Submit Request</PrimaryButton>
               <SecondaryButton onClick={() => setType(null)}>Back</SecondaryButton>
