@@ -1,18 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Search, SlidersHorizontal, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { ArrowLeft, Search, SlidersHorizontal, ArrowUpRight, ArrowDownLeft, Check } from "lucide-react";
 import { useStore } from "../store";
-import { Skeleton } from "../ui";
+import { BottomSheet, Skeleton } from "../ui";
 import { TRANSACTIONS } from "../mockData";
 import type { Txn } from "../types";
 
-const FILTERS = ["All", "Sent", "Received", "Top-Up", "Swaps", "BNPL", "Card Payments", "Squad Splits"] as const;
+const FILTERS = ["All", "Sent", "Received", "Top Up", "BNPL", "Card Payments", "Squad Splits"] as const;
 type Filter = typeof FILTERS[number];
+
+function matchesFilter(t: Txn, filter: Filter) {
+  switch (filter) {
+    case "All": return true;
+    case "Sent": return t.amount < 0;
+    case "Received": return t.amount > 0 && t.method !== "Top-Up";
+    case "Top Up": return t.method === "Top-Up";
+    case "BNPL": return t.method === "BNPL";
+    case "Card Payments": return t.method === "Card";
+    case "Squad Splits": return !!t.squad;
+  }
+}
 
 export function History() {
   const { dispatch, go } = useStore();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [loading, setLoading] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 800);
@@ -22,16 +35,7 @@ export function History() {
   const filtered = useMemo(() => {
     return TRANSACTIONS.filter((t) => {
       if (q && !t.name.toLowerCase().includes(q.toLowerCase())) return false;
-      switch (filter) {
-        case "All": return true;
-        case "Sent": return t.amount < 0;
-        case "Received": return t.amount > 0 && t.method !== "Top-Up";
-        case "Top-Up": return t.method === "Top-Up";
-        case "Swaps": return t.method === "Swap";
-        case "BNPL": return t.method === "BNPL";
-        case "Card Payments": return t.method === "Card";
-        case "Squad Splits": return !!t.squad;
-      }
+      return matchesFilter(t, filter);
     });
   }, [q, filter]);
 
@@ -48,7 +52,7 @@ export function History() {
           <ArrowLeft size={20} className="text-[var(--iute-text)]" />
         </button>
         <h1 className="flex-1 text-center text-2xl font-extrabold text-[var(--iute-text)]">Transactions</h1>
-        <button className="tap rounded-2xl bg-[var(--iute-surface)] p-2">
+        <button onClick={() => setFilterOpen(true)} className="tap rounded-2xl bg-[var(--iute-surface)] p-2">
           <SlidersHorizontal size={20} className="text-[var(--iute-text)]" />
         </button>
       </header>
@@ -109,6 +113,43 @@ export function History() {
           ))
         )}
       </div>
+
+      <BottomSheet open={filterOpen} onClose={() => setFilterOpen(false)} title="Filter transactions">
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {FILTERS.map((f) => {
+              const active = filter === f;
+              return (
+                <button
+                  key={`sheet-${f}`}
+                  onClick={() => {
+                    setFilter(f);
+                    setFilterOpen(false);
+                  }}
+                  className={`tap inline-flex items-center gap-2 rounded-full border px-4 py-3 text-sm font-bold transition ${
+                    active
+                      ? "border-[var(--iute-red)] bg-[var(--iute-red)] text-white shadow-sm"
+                      : "border-[var(--iute-text)]/15 bg-[var(--iute-fog)] text-[var(--iute-text)]"
+                  }`}
+                >
+                  {active ? <Check size={16} /> : null}
+                  {f}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => {
+              setFilter("All");
+              setFilterOpen(false);
+            }}
+            className="tap w-full rounded-2xl border border-[var(--iute-text)]/15 bg-[var(--iute-fog)] px-4 py-3 text-sm font-bold text-[var(--iute-text)]"
+          >
+            Clear filter
+          </button>
+        </div>
+      </BottomSheet>
     </div>
   );
 }
