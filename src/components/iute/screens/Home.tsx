@@ -23,6 +23,12 @@ export function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
   const [startY, setStartY] = useState<number | null>(null);
+  const extraCards = state.cards.filter((c) => c.id !== "default");
+  const [slide, setSlide] = useState(0);
+  const slideCount = 1 + extraCards.length;
+  const swipeStartX = useRef<number | null>(null);
+  const swipeDX = useRef(0);
+  useEffect(() => { if (slide >= slideCount) setSlide(0); }, [slideCount, slide]);
 
   const mkdToEur = (state.balanceMKD / state.rate).toFixed(2);
 
@@ -75,31 +81,91 @@ export function Home() {
         </h1>
       </header>
 
-      {/* Hero balance */}
-      <div className="px-4 pt-5">
-        <div className="relative overflow-hidden rounded-3xl bg-[var(--iute-red)] p-6 text-white shadow-[0_20px_40px_-15px_rgba(216,37,44,0.55)]" style={{ minHeight: 200 }}>
-          <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-black/10" />
-          <div className="pointer-events-none absolute right-10 bottom-0 h-24 w-24 rounded-full bg-white/5" />
-          <div className="relative flex h-full flex-col justify-between">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-80">Total Balance</p>
-                <p className="mt-3 font-mono text-[40px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
-                <p className="mt-2 text-base font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
+      {/* Hero balance / cards carousel */}
+      <div
+        className="px-4 pt-5 select-none"
+        onTouchStart={(e) => { if (slideCount <= 1) return; swipeStartX.current = e.touches[0].clientX; swipeDX.current = 0; }}
+        onTouchMove={(e) => { if (swipeStartX.current == null) return; swipeDX.current = e.touches[0].clientX - swipeStartX.current; }}
+        onTouchEnd={() => {
+          if (swipeStartX.current == null) return;
+          if (Math.abs(swipeDX.current) > 40) {
+            const dir = swipeDX.current < 0 ? 1 : -1;
+            setSlide((s) => Math.min(slideCount - 1, Math.max(0, s + dir)));
+          }
+          swipeStartX.current = null; swipeDX.current = 0;
+        }}
+      >
+        {slide === 0 ? (
+          <div className="relative overflow-hidden rounded-3xl bg-[var(--iute-red)] p-6 text-white shadow-[0_20px_40px_-15px_rgba(216,37,44,0.55)]" style={{ minHeight: 200 }}>
+            <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10" />
+            <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-black/10" />
+            <div className="pointer-events-none absolute right-10 bottom-0 h-24 w-24 rounded-full bg-white/5" />
+            <div className="relative flex h-full flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-mono text-[11px] font-bold uppercase tracking-widest opacity-80">Total Balance</p>
+                  <p className="mt-3 font-mono text-[40px] font-extrabold leading-none">{fmtMKD(state.balanceMKD)}</p>
+                  <p className="mt-2 text-base font-medium opacity-80">{fmtEUR(+mkdToEur)}</p>
+                </div>
+                <button onClick={() => setKycOpen(true)} className="tap rounded-xl bg-white/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
+                  Level {state.tier} ●
+                </button>
               </div>
-              <button onClick={() => setKycOpen(true)} className="tap rounded-xl bg-white/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
-                Level {state.tier} ●
-              </button>
-            </div>
-            <div className="mt-6 flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white">
-                <Wallet size={14} strokeWidth={2.4} />
-              </span>
-              <span className="text-[11px] font-semibold opacity-70">Available for instant transfer</span>
+              <div className="mt-6 flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white">
+                  <Wallet size={14} strokeWidth={2.4} />
+                </span>
+                <span className="text-[11px] font-semibold opacity-70">Available for instant transfer</span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (() => {
+          const c = extraCards[slide - 1];
+          if (!c) return null;
+          return (
+            <button
+              onClick={() => go("cards")}
+              aria-label={`${c.brand} card ending ${c.last4}`}
+              className="relative w-full overflow-hidden rounded-3xl p-6 text-left text-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.45)]"
+              style={{ minHeight: 200, background: c.frozen ? "var(--iute-red)" : "var(--iute-merlot)" }}
+            >
+              <div className="flex h-full flex-col justify-between" style={{ minHeight: 168 }}>
+                <div className="flex items-start justify-between">
+                  <span className="text-xl font-extrabold tracking-tight">{c.brand === "iute" ? "iute" : c.brand}</span>
+                  <span className="rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
+                    {c.kind === "virtual" ? "Virtual" : "Linked"}
+                  </span>
+                </div>
+                <p className="font-mono text-[18px] tracking-[0.25em]">•••• {c.last4}</p>
+                <div className="flex items-end justify-between font-mono text-[10px] uppercase">
+                  <span>{(c.name || state.userName || "YOUR NAME").toUpperCase()}</span>
+                  <span>{c.exp}</span>
+                  <span className="rounded-md bg-white/15 px-1.5 py-0.5 ring-1 ring-white/30">
+                    {c.frozen ? "[FROZEN]" : c.brand === "iute" ? "[ACTIVE]" : "[LINKED]"}
+                  </span>
+                </div>
+              </div>
+              {c.brand !== "iute" && (
+                <p className="mt-3 text-[11px] font-bold uppercase tracking-wide opacity-80">
+                  Linked card — cannot be frozen from iute
+                </p>
+              )}
+            </button>
+          );
+        })()}
+
+        {slideCount > 1 && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            {Array.from({ length: slideCount }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setSlide(i)}
+                aria-label={`Show slide ${i + 1}`}
+                className={`tap h-2 rounded-full transition-all ${i === slide ? "w-6 bg-[var(--iute-red)]" : "w-2 bg-[var(--iute-text)]/25"}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
 
