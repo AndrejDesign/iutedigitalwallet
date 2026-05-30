@@ -1,24 +1,12 @@
-// Vercel deployment configuration.
-// This project was migrated off Lovable's Cloudflare Workers wrapper.
-// Nitro builds output to .vercel/output (Vercel auto-detects).
-import { defineConfig } from "vite";
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import tsConfigPaths from "vite-tsconfig-paths";
+// Vercel deployment. Nitro outputs to .vercel/output, which Vercel auto-detects.
+// The Lovable sandbox still works in dev (this only affects `vite build`).
+import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  plugins: [
-    tsConfigPaths(),
-    tailwindcss(),
-    tanstackStart({
-      target: "vercel",
-    }),
-    viteReact(),
-  ],
-  resolve: {
-    alias: {
-      "@": "/src",
-    },
+  tanstackStart: {
+    server: { entry: "server" },
+  },
+  nitro: {
+    preset: "vercel",
   },
 });
