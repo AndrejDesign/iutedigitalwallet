@@ -274,12 +274,24 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const [scanning, setScanning] = useState(false);
   const [slide, setSlide] = useState(0); // 0..1 for slide-to-pay
   const [dragging, setDragging] = useState(false);
-  const [extraBillers, setExtraBillers] = useState<Biller[]>([]);
-  const [newCat, setNewCat] = useState<"electricity" | "internet" | "water" | "other">("electricity");
+  type CatKey = "electricity" | "internet" | "water" | "other";
+  type SavedBiller = { key: string; name: string; saved: string; cat: CatKey };
+  const STORAGE_KEY = "iute:customBillers:v1";
+  const [savedBillers, setSavedBillers] = useState<SavedBiller[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as SavedBiller[]) : [];
+    } catch { return []; }
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedBillers)); } catch { /* noop */ }
+  }, [savedBillers]);
+  const [newCat, setNewCat] = useState<CatKey>("electricity");
   const [newName, setNewName] = useState("");
   const [newRef, setNewRef] = useState("");
 
-  type CatKey = "electricity" | "internet" | "water" | "other";
   const CAT_PRESET: Record<CatKey, { Icon: typeof Zap; tint: string; ring: string; label: string }> = {
     electricity: { Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)", label: "Electricity" },
     internet:    { Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",   label: "Internet" },
@@ -287,19 +299,22 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
     other:       { Icon: Building2, tint: "linear-gradient(135deg,#3a3a3a,#111)", ring: "rgba(0,0,0,0.25)",      label: "Other" },
   };
 
+  const extraBillers: Biller[] = savedBillers.map((s) => {
+    const p = CAT_PRESET[s.cat];
+    return { key: s.key, name: s.name, Icon: p.Icon, tint: p.tint, ring: p.ring, saved: s.saved, suggested: 0 };
+  });
+
+  function deleteBiller(key: string) {
+    setSavedBillers((arr) => arr.filter((b) => b.key !== key));
+    toast("Biller removed");
+  }
+
   function saveNewBiller() {
     if (!newName.trim() || !newRef.trim()) { toast("Enter name & reference"); return; }
     const preset = CAT_PRESET[newCat];
-    const b: Biller = {
-      key: `custom-${Date.now()}`,
-      name: newName.trim(),
-      Icon: preset.Icon,
-      tint: preset.tint,
-      ring: preset.ring,
-      saved: newRef.trim(),
-      suggested: 0,
-    };
-    setExtraBillers((arr) => [...arr, b]);
+    const saved: SavedBiller = { key: `custom-${Date.now()}`, name: newName.trim(), saved: newRef.trim(), cat: newCat };
+    setSavedBillers((arr) => [...arr, saved]);
+    const b: Biller = { key: saved.key, name: saved.name, Icon: preset.Icon, tint: preset.tint, ring: preset.ring, saved: saved.saved, suggested: 0 };
     setNewName(""); setNewRef(""); setNewCat("electricity");
     toast(`✓ ${b.name} saved`);
     pickBiller(b);
