@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import {
-  Building2, CreditCard as CCIcon, Users, Landmark, Search, Plus,
+  Building2, CreditCard as CCIcon, Search, Plus,
   Check, Link2, QrCode, MessageSquare, ChevronDown, UserPlus, ArrowLeft,
 } from "lucide-react";
 import { BottomSheet, PrimaryButton, SecondaryButton } from "../ui";
@@ -13,8 +13,15 @@ import { CONTACTS, FX_LIST, FX_RATES, type FxCode, type Contact } from "../mockD
 const METHODS = [
   { id: "bank",   Icon: Building2, label: "Bank Transfer",     sub: "1–2 business days" },
   { id: "card",   Icon: CCIcon,    label: "Debit/Credit Card", sub: "Instant" },
-  { id: "friend", Icon: Users,     label: "From a Friend",     sub: "Instant · Free" },
-  { id: "agent",  Icon: Landmark,  label: "Agent / ATM",       sub: "Find nearest" },
+];
+
+const BANKS = [
+  "NLB Banka",
+  "Komercijalna Banka",
+  "Halkbank",
+  "Stopanska Banka",
+  "Sparkasse Bank",
+  "ProCredit Bank",
 ];
 
 export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -22,13 +29,40 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
   const [method, setMethod] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Bank fields
+  const [bank, setBank] = useState<string>("");
+  const [txRef, setTxRef] = useState("");
+  // Card fields
+  const [cardNum, setCardNum] = useState("");
+  const [cardExp, setCardExp] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [cardName, setCardName] = useState("");
 
-  function reset() { setMethod(null); setAmount(""); setStep(1); }
+  function reset() {
+    setMethod(null); setAmount(""); setStep(1);
+    setBank(""); setTxRef("");
+    setCardNum(""); setCardExp(""); setCardCvc(""); setCardName("");
+  }
   function close() { onClose(); setTimeout(reset, 250); }
 
   const eur = ((+amount || 0) * FX_RATES.EUR).toFixed(2);
   const overCap = state.tier === 1 && (+amount + state.balanceMKD) > 15000;
   const methodLabel = METHODS.find((m) => m.id === method)?.label ?? "";
+
+  const cardNumOk = cardNum.replace(/\s/g, "").length >= 15;
+  const cardExpOk = /^\d{2}\/\d{2}$/.test(cardExp);
+  const cardCvcOk = /^\d{3,4}$/.test(cardCvc);
+  const cardOk = cardNumOk && cardExpOk && cardCvcOk && cardName.trim().length > 1;
+  const bankOk = !!bank && txRef.trim().length >= 4;
+  const detailsOk = method === "bank" ? bankOk : method === "card" ? cardOk : false;
+
+  function formatCardNum(v: string) {
+    return v.replace(/\D/g, "").slice(0, 19).replace(/(.{4})/g, "$1 ").trim();
+  }
+  function formatExp(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 4);
+    return d.length <= 2 ? d : d.slice(0, 2) + "/" + d.slice(2);
+  }
 
   return (
     <BottomSheet open={open} onClose={close} title="Add Money">
@@ -81,6 +115,83 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
 
         {step === 2 && (
           <>
+            {method === "bank" && (
+              <div className="space-y-3 rounded-2xl bg-[var(--iute-fog)] p-3">
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Select Bank</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BANKS.map((b) => {
+                      const sel = bank === b;
+                      return (
+                        <button
+                          key={b}
+                          onClick={() => setBank(b)}
+                          className={`tap rounded-xl border-2 px-2.5 py-2 text-left text-[11px] font-extrabold leading-tight transition-colors ${sel ? "border-[var(--iute-red)] bg-[var(--iute-red)]/5 text-[var(--iute-red)]" : "border-transparent bg-white text-[var(--iute-text)]"}`}
+                        >
+                          {b}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Transaction Reference No.</p>
+                  <input
+                    value={txRef}
+                    onChange={(e) => setTxRef(e.target.value.toUpperCase())}
+                    placeholder="e.g. TX-983421"
+                    className="h-11 w-full rounded-2xl bg-white px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {method === "card" && (
+              <div className="space-y-2 rounded-2xl bg-[var(--iute-fog)] p-3">
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Card Number</p>
+                  <input
+                    inputMode="numeric"
+                    value={cardNum}
+                    onChange={(e) => setCardNum(formatCardNum(e.target.value))}
+                    placeholder="1234 5678 9012 3456"
+                    className="h-11 w-full rounded-2xl bg-white px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Expiry</p>
+                    <input
+                      inputMode="numeric"
+                      value={cardExp}
+                      onChange={(e) => setCardExp(formatExp(e.target.value))}
+                      placeholder="MM/YY"
+                      className="h-11 w-full rounded-2xl bg-white px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">CVC</p>
+                    <input
+                      inputMode="numeric"
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      placeholder="123"
+                      className="h-11 w-full rounded-2xl bg-white px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Cardholder Name</p>
+                  <input
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    placeholder="Name on card"
+                    className="h-11 w-full rounded-2xl bg-white px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+                  />
+                </div>
+              </div>
+            )}
+
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Enter Amount</p>
             <input
               autoFocus
@@ -103,7 +214,7 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
                 ⚠️ Level 1 cap: 15,000 ден — Upgrade to Level 2 for higher limits.
               </div>
             )}
-            <PrimaryButton disabled={!amount || +amount <= 0} onClick={() => setStep(3)}>Review</PrimaryButton>
+            <PrimaryButton disabled={!amount || +amount <= 0 || !detailsOk} onClick={() => setStep(3)}>Review</PrimaryButton>
           </>
         )}
 
@@ -115,6 +226,18 @@ export function AddMoneySheet({ open, onClose }: { open: boolean; onClose: () =>
                 Adding: {fmtMKD(+amount)}
               </p>
               <p className="text-sm font-bold text-[#1A1A1A]/80">via {methodLabel}</p>
+              {method === "bank" && (
+                <div className="mt-2 space-y-0.5 text-xs font-bold text-[#1A1A1A]/80">
+                  <p>Bank: {bank}</p>
+                  <p className="font-mono">Ref: {txRef}</p>
+                </div>
+              )}
+              {method === "card" && (
+                <div className="mt-2 space-y-0.5 text-xs font-bold text-[#1A1A1A]/80">
+                  <p className="font-mono">Card •••• {cardNum.replace(/\s/g, "").slice(-4)}</p>
+                  <p>{cardName}</p>
+                </div>
+              )}
               {method === "bank" ? (
                 <p className="mt-3 text-xs font-bold text-[#1A1A1A]/80 leading-relaxed">
                   Estimated processing time: 1–2 business days. Balance will update upon clearance.
