@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowUpRight, ArrowDownLeft, Building2, Wallet,
   Lock, ShoppingBag, Loader2, Plus, Send, ArrowLeftRight, Zap, Wifi, Droplet,
-  ScanLine, Camera, ChevronRight, Fingerprint, Check,
+  ScanLine, Camera, ChevronRight, Fingerprint, Check, Trash2,
 } from "lucide-react";
 import { useStore, fmtMKD, fmtEUR } from "../store";
 import { Card, BottomSheet, PrimaryButton } from "../ui";
@@ -274,12 +274,24 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const [scanning, setScanning] = useState(false);
   const [slide, setSlide] = useState(0); // 0..1 for slide-to-pay
   const [dragging, setDragging] = useState(false);
-  const [extraBillers, setExtraBillers] = useState<Biller[]>([]);
-  const [newCat, setNewCat] = useState<"electricity" | "internet" | "water" | "other">("electricity");
+  type CatKey = "electricity" | "internet" | "water" | "other";
+  type SavedBiller = { key: string; name: string; saved: string; cat: CatKey };
+  const STORAGE_KEY = "iute:customBillers:v1";
+  const [savedBillers, setSavedBillers] = useState<SavedBiller[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as SavedBiller[]) : [];
+    } catch { return []; }
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedBillers)); } catch { /* noop */ }
+  }, [savedBillers]);
+  const [newCat, setNewCat] = useState<CatKey>("electricity");
   const [newName, setNewName] = useState("");
   const [newRef, setNewRef] = useState("");
 
-  type CatKey = "electricity" | "internet" | "water" | "other";
   const CAT_PRESET: Record<CatKey, { Icon: typeof Zap; tint: string; ring: string; label: string }> = {
     electricity: { Icon: Zap,     tint: "linear-gradient(135deg,#D8252C,#7A1218)", ring: "rgba(216,37,44,0.22)", label: "Electricity" },
     internet:    { Icon: Wifi,    tint: "linear-gradient(135deg,#5A0917,#1A0307)", ring: "rgba(90,9,23,0.25)",   label: "Internet" },
@@ -287,19 +299,22 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
     other:       { Icon: Building2, tint: "linear-gradient(135deg,#3a3a3a,#111)", ring: "rgba(0,0,0,0.25)",      label: "Other" },
   };
 
+  const extraBillers: Biller[] = savedBillers.map((s) => {
+    const p = CAT_PRESET[s.cat];
+    return { key: s.key, name: s.name, Icon: p.Icon, tint: p.tint, ring: p.ring, saved: s.saved, suggested: 0 };
+  });
+
+  function deleteBiller(key: string) {
+    setSavedBillers((arr) => arr.filter((b) => b.key !== key));
+    toast("Biller removed");
+  }
+
   function saveNewBiller() {
     if (!newName.trim() || !newRef.trim()) { toast("Enter name & reference"); return; }
     const preset = CAT_PRESET[newCat];
-    const b: Biller = {
-      key: `custom-${Date.now()}`,
-      name: newName.trim(),
-      Icon: preset.Icon,
-      tint: preset.tint,
-      ring: preset.ring,
-      saved: newRef.trim(),
-      suggested: 0,
-    };
-    setExtraBillers((arr) => [...arr, b]);
+    const saved: SavedBiller = { key: `custom-${Date.now()}`, name: newName.trim(), saved: newRef.trim(), cat: newCat };
+    setSavedBillers((arr) => [...arr, saved]);
+    const b: Biller = { key: saved.key, name: saved.name, Icon: preset.Icon, tint: preset.tint, ring: preset.ring, saved: saved.saved, suggested: 0 };
     setNewName(""); setNewRef(""); setNewCat("electricity");
     toast(`✓ ${b.name} saved`);
     pickBiller(b);
@@ -407,27 +422,41 @@ function PayBillSheet({ open, onClose }: { open: boolean; onClose: () => void })
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {[...BILLERS, ...extraBillers].map((b) => (
-              <button
-                key={b.key}
-                onClick={() => pickBiller(b)}
-                className="tap group relative flex h-[132px] flex-col justify-between overflow-hidden rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-4 text-left transition"
-                style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -18px rgba(0,0,0,0.25)" }}
-              >
-                <span
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
-                  style={{ background: b.tint, boxShadow: `0 8px 20px -10px ${b.ring}` }}
-                >
-                  <b.Icon size={22} strokeWidth={2.25} />
-                </span>
-                <span>
-                  <span className="block text-sm font-extrabold leading-tight text-[var(--iute-text)]">{b.name}</span>
-                  <span className="mt-1 block font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--iute-text-soft)]">
-                    Last · {b.saved}
-                  </span>
-                </span>
-              </button>
-            ))}
+            {[...BILLERS, ...extraBillers].map((b) => {
+              const isCustom = b.key.startsWith("custom-");
+              return (
+                <div key={b.key} className="relative">
+                  <button
+                    onClick={() => pickBiller(b)}
+                    className="tap group relative flex h-[132px] w-full flex-col justify-between overflow-hidden rounded-3xl border border-[var(--iute-divider)] bg-[var(--iute-surface)] p-4 text-left transition"
+                    style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -18px rgba(0,0,0,0.25)" }}
+                  >
+                    <span
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
+                      style={{ background: b.tint, boxShadow: `0 8px 20px -10px ${b.ring}` }}
+                    >
+                      <b.Icon size={22} strokeWidth={2.25} />
+                    </span>
+                    <span>
+                      <span className="block pr-6 text-sm font-extrabold leading-tight text-[var(--iute-text)]">{b.name}</span>
+                      <span className="mt-1 block font-mono text-[10px] font-bold uppercase tracking-wider text-[var(--iute-text-soft)]">
+                        Last · {b.saved}
+                      </span>
+                    </span>
+                  </button>
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); deleteBiller(b.key); }}
+                      aria-label={`Delete ${b.name}`}
+                      className="tap absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-[var(--iute-text)]/8 text-[var(--iute-text-soft)] hover:bg-[var(--iute-red)] hover:text-white"
+                    >
+                      <Trash2 size={14} strokeWidth={2.4} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={() => setStep("addBiller")}
