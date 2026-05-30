@@ -712,17 +712,15 @@ function MyCardsCarousel() {
       >
         {cards.map((c, i) => {
           const isActive = i === idx;
+          if (!isActive) return null;
           return (
             <button
               key={c.id}
-              onClick={() => isActive ? go("cards") : goTo(i)}
+              onClick={() => go("cards")}
               aria-label={`${c.brand === "iute" ? "iute" : c.brand} card ending ${c.last4}`}
               className="absolute inset-x-0 mx-auto h-[170px] w-[92%] rounded-3xl text-left text-white shadow-2xl transition-all duration-300"
               style={{
                 background: c.frozen ? "var(--iute-red)" : "var(--iute-merlot)",
-                opacity: isActive ? 1 : 0,
-                zIndex: isActive ? 10 : 0,
-                pointerEvents: isActive ? "auto" : "none",
               }}
             >
               <div className="flex h-full flex-col justify-between p-5">
@@ -748,23 +746,18 @@ function MyCardsCarousel() {
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-2">
-        {cards.map((c, i) => (
-          <button
-            key={c.id}
-            onClick={() => goTo(i)}
-            aria-label={`Show card ${i + 1}`}
-            className={`tap h-2 rounded-full transition-all ${i === idx ? "w-6 bg-[var(--iute-red)]" : "w-2 bg-[var(--iute-text)]/25"}`}
-          />
-        ))}
-        <button
-          onClick={() => go("cards")}
-          aria-label="Add a new card"
-          className="tap ml-2 flex h-6 items-center gap-1 rounded-full bg-[var(--iute-cloud)] px-2 text-[11px] font-bold text-[var(--iute-red)]"
-        >
-          <Plus size={12} strokeWidth={2.6} /> Add
-        </button>
-      </div>
+      {cards.length > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-2">
+          {cards.map((c, i) => (
+            <button
+              key={c.id}
+              onClick={() => goTo(i)}
+              aria-label={`Show card ${i + 1}`}
+              className={`tap h-2 rounded-full transition-all ${i === idx ? "w-6 bg-[var(--iute-red)]" : "w-2 bg-[var(--iute-text)]/25"}`}
+            />
+          ))}
+        </div>
+      )}
 
       {cards[idx] && cards[idx].brand !== "iute" && (
         <p className="mt-2 text-center text-[11px] font-bold text-[var(--iute-text-soft)]">
