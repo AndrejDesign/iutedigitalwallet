@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Search, SlidersHorizontal, ArrowUpRight, ArrowDownLeft, Check } from "lucide-react";
+import { ArrowLeft, Search, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useStore } from "../store";
-import { BottomSheet, Skeleton } from "../ui";
+import { Skeleton } from "../ui";
 import { TRANSACTIONS } from "../mockData";
 import type { Txn } from "../types";
 
@@ -25,7 +25,6 @@ export function History() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [loading, setLoading] = useState(true);
-  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 800);
@@ -52,9 +51,7 @@ export function History() {
           <ArrowLeft size={20} className="text-[var(--iute-text)]" />
         </button>
         <h1 className="flex-1 text-center text-2xl font-extrabold text-[var(--iute-text)]">Transactions</h1>
-        <button onClick={() => setFilterOpen(true)} className="tap rounded-2xl bg-[var(--iute-surface)] p-2">
-          <SlidersHorizontal size={20} className="text-[var(--iute-text)]" />
-        </button>
+        <span className="h-9 w-9" aria-hidden />
       </header>
 
       <div className="mt-3 flex h-12 items-center gap-2 rounded-2xl bg-[var(--iute-fog)] px-4">
@@ -113,43 +110,6 @@ export function History() {
           ))
         )}
       </div>
-
-      <BottomSheet open={filterOpen} onClose={() => setFilterOpen(false)} title="Filter transactions">
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {FILTERS.map((f) => {
-              const active = filter === f;
-              return (
-                <button
-                  key={`sheet-${f}`}
-                  onClick={() => {
-                    setFilter(f);
-                    setFilterOpen(false);
-                  }}
-                  className={`tap inline-flex items-center gap-2 rounded-full border px-4 py-3 text-sm font-bold transition ${
-                    active
-                      ? "border-[var(--iute-red)] bg-[var(--iute-red)] text-white shadow-sm"
-                      : "border-[var(--iute-text)]/15 bg-[var(--iute-fog)] text-[var(--iute-text)]"
-                  }`}
-                >
-                  {active ? <Check size={16} /> : null}
-                  {f}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={() => {
-              setFilter("All");
-              setFilterOpen(false);
-            }}
-            className="tap w-full rounded-2xl border border-[var(--iute-text)]/15 bg-[var(--iute-fog)] px-4 py-3 text-sm font-bold text-[var(--iute-text)]"
-          >
-            Clear filter
-          </button>
-        </div>
-      </BottomSheet>
     </div>
   );
 }
