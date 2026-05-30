@@ -680,3 +680,99 @@ function KycStep({ step, title, sub, done, current }: { step: number; title: str
     </div>
   );
 }
+
+function MyCardsCarousel() {
+  const { state, dispatch, go } = useStore();
+  const { cards, activeCardId } = state;
+  const idx = Math.max(0, cards.findIndex((c) => c.id === activeCardId));
+  const trackRef = useRef<HTMLDivElement>(null);
+  const startX = useRef<number | null>(null);
+  const deltaX = useRef(0);
+
+  function goTo(i: number) {
+    const next = Math.min(cards.length - 1, Math.max(0, i));
+    const id = cards[next]?.id;
+    if (id && id !== activeCardId) dispatch({ type: "SET_ACTIVE_CARD", id });
+  }
+
+  return (
+    <section className="px-4 pt-4" aria-label="My cards">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-base font-extrabold text-[var(--iute-text)]">My Cards</h3>
+        <button onClick={() => go("cards")} className="tap text-sm font-bold text-[var(--iute-red)]">Manage →</button>
+      </div>
+
+      <div
+        ref={trackRef}
+        className="relative h-[170px] w-full select-none touch-pan-y"
+        onTouchStart={(e) => { startX.current = e.touches[0].clientX; deltaX.current = 0; }}
+        onTouchMove={(e) => {
+          if (startX.current == null) return;
+          deltaX.current = e.touches[0].clientX - startX.current;
+        }}
+        onTouchEnd={() => {
+          if (Math.abs(deltaX.current) > 40) goTo(idx + (deltaX.current < 0 ? 1 : -1));
+          startX.current = null; deltaX.current = 0;
+        }}
+      >
+        {cards.map((c, i) => {
+          const offset = i - idx;
+          const isActive = i === idx;
+          return (
+            <button
+              key={c.id}
+              onClick={() => isActive ? go("cards") : goTo(i)}
+              aria-label={`${c.brand === "iute" ? "iute" : c.brand} card ending ${c.last4}`}
+              className="absolute inset-x-0 mx-auto h-[170px] w-[92%] rounded-3xl text-left text-white shadow-2xl transition-all duration-300"
+              style={{
+                background: c.frozen ? "var(--iute-red)" : "var(--iute-merlot)",
+                transform: `translateX(${offset * 24}px) scale(${isActive ? 1 : 0.92})`,
+                opacity: Math.abs(offset) > 1 ? 0 : isActive ? 1 : 0.55,
+                zIndex: 10 - Math.abs(offset),
+                pointerEvents: Math.abs(offset) > 1 ? "none" : "auto",
+              }}
+            >
+              <div className="flex h-full flex-col justify-between p-5">
+                <div className="flex items-start justify-between">
+                  <span className="text-xl font-extrabold tracking-tight">
+                    {c.brand === "iute" ? "iute" : c.brand}
+                  </span>
+                  <span className="rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">
+                    {c.kind === "virtual" ? "Virtual" : "Linked"}
+                  </span>
+                </div>
+                <p className="font-mono text-[18px] tracking-[0.2em]">•••• {c.last4}</p>
+                <div className="flex items-end justify-between font-mono text-[10px] uppercase">
+                  <span>{(c.name || state.userName || "YOUR NAME").toUpperCase()}</span>
+                  <span>{c.exp}</span>
+                  <span className="rounded-md bg-white/15 px-1.5 py-0.5 ring-1 ring-white/30">
+                    {c.frozen ? "[FROZEN]" : c.brand === "iute" ? "[ACTIVE]" : "[LINKED]"}
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {cards.length > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-2">
+          {cards.map((c, i) => (
+            <button
+              key={c.id}
+              onClick={() => goTo(i)}
+              aria-label={`Show card ${i + 1}`}
+              className={`tap h-2 rounded-full transition-all ${i === idx ? "w-6 bg-[var(--iute-red)]" : "w-2 bg-[var(--iute-text)]/25"}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {cards[idx] && cards[idx].brand !== "iute" && (
+        <p className="mt-2 text-center text-[11px] font-bold text-[var(--iute-text-soft)]">
+          Linked {cards[idx].brand} card — cannot be frozen from iute.
+        </p>
+      )}
+    </section>
+  );
+}
