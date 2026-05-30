@@ -30,13 +30,14 @@ export interface AppState {
   balanceMKD: number;
   rate: number; // EUR per MKD denominator (MKD per 1 EUR)
   iutePoints: number;
-  cardFrozen: boolean;
   panicMode: boolean;
   dailyLimit: number;
   streakDays: number;
   selectedTxn: Txn | null;
   toast: string | null;
   notifications: Notification[];
+  cards: WalletCard[];
+  activeCardId: string;
 }
 
 export interface Notification {
@@ -46,4 +47,14 @@ export interface Notification {
   when: string;
   icon: "money" | "card" | "squad" | "promo" | "alert";
   read: boolean;
+}
+
+export interface WalletCard {
+  id: string;
+  last4: string;
+  name: string;
+  exp: string;
+  brand: "iute" | "VISA" | "MC";
+  kind: "virtual" | "existing";
+  frozen: boolean;
 }
