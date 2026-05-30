@@ -1,23 +1,42 @@
 import { useState } from "react";
 import {
-  Plus, Snowflake, Flame, CreditCard as CCIcon, Package, Sparkles,
-  Check, X as XIcon,
+  Plus, Snowflake, Flame, CreditCard as CCIcon, Sparkles,
 } from "lucide-react";
 import { useStore, fmtMKD } from "../store";
 import { Card, BottomSheet, PrimaryButton, SecondaryButton } from "../ui";
 import { CARD_INSIGHTS, CARD_CATEGORIES } from "../mockData";
 
+type WalletCard = {
+  id: string;
+  last4: string;
+  name: string;
+  exp: string;
+  brand: "iute" | "VISA" | "MC";
+  kind: "virtual" | "existing";
+};
+
 export function Cards() {
   const { state, dispatch, toast } = useStore();
-  const [last4, setLast4] = useState("8942");
+  const [cards, setCards] = useState<WalletCard[]>([
+    { id: "default", last4: "8942", name: state.userName || "YOUR NAME", exp: "09/28", brand: "iute", kind: "virtual" },
+  ]);
+  const [activeId, setActiveId] = useState<string>("default");
   const [addOpen, setAddOpen] = useState(false);
   const [insightIdx, setInsightIdx] = useState(0);
   const [insightDismissed, setInsightDismissed] = useState(false);
+
+  const active = cards.find((c) => c.id === activeId) ?? cards[0];
 
   function toggleFreeze() {
     const newFrozen = !state.cardFrozen;
     dispatch({ type: "TOGGLE_FREEZE", value: newFrozen });
     toast(newFrozen ? "❄️ Card frozen — all payments paused." : "🔥 Card unfrozen — ready to use.");
+  }
+
+  function addCard(card: Omit<WalletCard, "id">) {
+    const id = `c_${Date.now()}`;
+    setCards((cs) => [...cs, { ...card, id }]);
+    setActiveId(id);
   }
 
   const insight = CARD_INSIGHTS[insightIdx];
@@ -45,19 +64,41 @@ export function Cards() {
         )}
         <div className="absolute inset-0 flex flex-col justify-between p-5">
           <div className="flex items-start justify-between">
-            <span className="text-2xl font-extrabold tracking-tight">iute</span>
-            <span className="rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">Virtual</span>
+            <span className="text-2xl font-extrabold tracking-tight">{active.brand === "iute" ? "iute" : active.brand}</span>
+            <span className="rounded-lg bg-white/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wide ring-1 ring-white/30">{active.kind === "virtual" ? "Virtual" : "Linked"}</span>
           </div>
-          <p className="font-mono text-[22px] tracking-[0.2em]">•••• •••• •••• {last4}</p>
+          <p className="font-mono text-[22px] tracking-[0.2em]">•••• •••• •••• {active.last4}</p>
           <div className="flex items-end justify-between font-mono text-[11px] uppercase">
-            <span>{(state.userName || "YOUR NAME").toUpperCase()}</span>
-            <span>09/28</span>
+            <span>{(active.name || state.userName || "YOUR NAME").toUpperCase()}</span>
+            <span>{active.exp}</span>
             <span className="rounded-md bg-white/15 px-1.5 py-0.5 ring-1 ring-white/30">
               {state.cardFrozen ? "[FROZEN]" : "[ACTIVE]"}
             </span>
           </div>
         </div>
       </div>
+
+      {/* Card switcher */}
+      {cards.length > 1 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
+          {cards.map((c) => {
+            const isActive = c.id === activeId;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setActiveId(c.id)}
+                className={`tap shrink-0 rounded-2xl px-3 py-2 text-[11px] font-extrabold ring-1 transition ${
+                  isActive
+                    ? "bg-[var(--iute-red)] text-white ring-[var(--iute-red)]"
+                    : "bg-[var(--iute-surface)] text-[var(--iute-text)] ring-[var(--iute-divider)]"
+                }`}
+              >
+                {c.brand === "iute" ? "iute" : c.brand} •••• {c.last4}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Freeze / Unfreeze button */}
       <button
@@ -127,7 +168,12 @@ export function Cards() {
         </Card>
       )}
 
-      <AddCardSheet open={addOpen} onClose={() => setAddOpen(false)} onAdded={(n) => { setLast4(n); toast("✅ Card added!"); }} />
+      <AddCardSheet
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onAddExisting={(card) => { addCard({ ...card, kind: "existing" }); toast("✅ Card linked!"); }}
+        onRequestVirtual={() => toast("📨 Virtual card requested — we'll notify you when it's ready.")}
+      />
     </div>
   );
 }
@@ -135,30 +181,39 @@ export function Cards() {
 /* -------------------------------------------------------------------------- */
 /* ADD CARD FLOW                                                              */
 /* -------------------------------------------------------------------------- */
-function AddCardSheet({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: (last4: string) => void }) {
-  const { state } = useStore();
-  const [type, setType] = useState<"existing" | "virtual" | "physical" | null>(null);
+function AddCardSheet({
+  open, onClose, onAddExisting, onRequestVirtual,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAddExisting: (card: { last4: string; name: string; exp: string; brand: "VISA" | "MC" }) => void;
+  onRequestVirtual: () => void;
+}) {
+  const [type, setType] = useState<"existing" | "virtual" | null>(null);
   const [num, setNum] = useState("");
   const [name, setName] = useState("");
   const [exp, setExp] = useState("");
   const [cvv, setCvv] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  function reset() { setType(null); setNum(""); setName(""); setExp(""); setCvv(""); setLoading(false); }
+  function reset() { setType(null); setNum(""); setName(""); setExp(""); setCvv(""); setSubmitted(false); }
   function close() { onClose(); setTimeout(reset, 250); }
 
   function formatCardNumber(v: string) {
     return v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
   }
-  const last4 = num.replace(/\D/g, "").slice(-4) || "••••";
+  const digits = num.replace(/\D/g, "");
+  const last4 = digits.slice(-4) || "••••";
+  const brand: "VISA" | "MC" = digits.startsWith("5") ? "MC" : "VISA";
+  const expValid = /^\d{2}\/\d{2}$/.test(exp);
+  const canSubmit = digits.length === 16 && name.trim().length >= 2 && expValid && cvv.length >= 3;
 
   return (
     <BottomSheet open={open} onClose={close} title="Add New Card">
       {!type && (
         <div className="space-y-3">
           <TypeOption Icon={CCIcon} label="Add Existing Card" sub="Link a Visa/Mastercard you already own" onClick={() => setType("existing")} />
-          <TypeOption Icon={Plus} label="Request Virtual Card" sub="Instant · Free · No physical card needed" onClick={() => setType("virtual")} />
-          <TypeOption Icon={Package} label="Order Physical Card" sub="Delivered in 3–5 business days" onClick={() => setType("physical")} />
+          <TypeOption Icon={Plus} label="Request Virtual Card" sub="Free · No physical card needed" onClick={() => setType("virtual")} />
         </div>
       )}
 
@@ -166,54 +221,57 @@ function AddCardSheet({ open, onClose, onAdded }: { open: boolean; onClose: () =
         <div className="space-y-3">
           {/* Mini live preview */}
           <div className="relative h-32 rounded-2xl bg-[var(--iute-merlot)] p-4 text-white">
-            <p className="text-xs font-bold opacity-70">VISA</p>
+            <p className="text-xs font-bold opacity-70">{brand}</p>
             <p className="mt-2 font-mono text-base tracking-widest">{num || "•••• •••• •••• ••••"}</p>
             <div className="mt-2 flex items-end justify-between font-mono text-[10px] uppercase">
               <span>{name || "CARDHOLDER NAME"}</span>
               <span>{exp || "MM/YY"}</span>
             </div>
           </div>
-          <input value={num} onChange={(e) => setNum(formatCardNumber(e.target.value))} placeholder="Card number" inputMode="numeric" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-base font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-          <input value={name} onChange={(e) => setName(e.target.value.toUpperCase())} placeholder="Cardholder name" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+          <input value={num} onChange={(e) => setNum(formatCardNumber(e.target.value))} placeholder="Card number" inputMode="numeric" autoComplete="cc-number" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-base font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+          <input value={name} onChange={(e) => setName(e.target.value.toUpperCase())} placeholder="Cardholder name" autoComplete="cc-name" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
           <div className="grid grid-cols-2 gap-2">
-            <input value={exp} onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setExp(v.length > 2 ? `${v.slice(0, 2)}/${v.slice(2)}` : v); }} placeholder="MM/YY" className="h-12 rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-base font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-            <input type="password" value={cvv} onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="CVV" inputMode="numeric" className="h-12 rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-base font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+            <input value={exp} onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setExp(v.length > 2 ? `${v.slice(0, 2)}/${v.slice(2)}` : v); }} placeholder="MM/YY" inputMode="numeric" autoComplete="cc-exp" className="h-12 rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-base font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
+            <input type="password" value={cvv} onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="CVV" inputMode="numeric" autoComplete="cc-csc" className="h-12 rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-base font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
           </div>
-          <PrimaryButton disabled={num.length < 19 || !name || !exp || !cvv} onClick={() => { onAdded(last4); close(); }}>Add Card</PrimaryButton>
+          <PrimaryButton
+            disabled={!canSubmit}
+            onClick={() => {
+              onAddExisting({ last4, name: name.trim(), exp, brand });
+              close();
+            }}
+          >
+            Add Card
+          </PrimaryButton>
           <SecondaryButton onClick={() => setType(null)}>Back</SecondaryButton>
         </div>
       )}
 
       {type === "virtual" && (
         <div className="space-y-4">
-          <p className="text-sm font-bold text-[var(--iute-text)]">Your virtual card will be generated instantly.</p>
-          <div className="flex gap-2">
-            {(["MKD", "EUR"] as const).map((c) => (
-              <button key={c} className="tap h-11 flex-1 rounded-2xl bg-[var(--iute-fog)] text-sm font-bold text-[var(--iute-text)] ring-1 ring-[var(--iute-divider)]">{c}</button>
-            ))}
-          </div>
-          {loading ? (
-            <div className="shimmer h-32 rounded-2xl" />
+          {submitted ? (
+            <>
+              <div className="rounded-2xl bg-[var(--iute-fog)] p-4 text-center">
+                <p className="text-3xl">📨</p>
+                <p className="mt-2 text-sm font-extrabold text-[var(--iute-text)]">Request submitted</p>
+                <p className="mt-1 text-[12px] font-medium text-[var(--iute-text-soft)]">
+                  We'll review your request and notify you when your virtual card is ready.
+                </p>
+              </div>
+              <PrimaryButton onClick={close}>Done</PrimaryButton>
+            </>
           ) : (
-            <PrimaryButton onClick={() => {
-              setLoading(true);
-              setTimeout(() => {
-                const n = String(8000 + Math.floor(Math.random() * 999));
-                onAdded(n); close();
-              }, 1500);
-            }}>Generate Card Now</PrimaryButton>
+            <>
+              <p className="text-sm font-bold text-[var(--iute-text)]">Request a new virtual card. Our team will issue it after a quick review.</p>
+              <div className="flex gap-2">
+                {(["MKD", "EUR"] as const).map((c) => (
+                  <button key={c} className="tap h-11 flex-1 rounded-2xl bg-[var(--iute-fog)] text-sm font-bold text-[var(--iute-text)] ring-1 ring-[var(--iute-divider)]">{c}</button>
+                ))}
+              </div>
+              <PrimaryButton onClick={() => { onRequestVirtual(); setSubmitted(true); }}>Submit Request</PrimaryButton>
+              <SecondaryButton onClick={() => setType(null)}>Back</SecondaryButton>
+            </>
           )}
-          {!loading && <SecondaryButton onClick={() => setType(null)}>Back</SecondaryButton>}
-        </div>
-      )}
-
-      {type === "physical" && (
-        <div className="space-y-3">
-          <input defaultValue={state.userName} placeholder="Full name" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-          <input defaultValue="ул. Македонија 24, Скопје" placeholder="Address" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-          <input defaultValue="1000" placeholder="Postal code" className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]" />
-          <PrimaryButton onClick={() => { onAdded("9012"); close(); }}>Ship to Me</PrimaryButton>
-          <SecondaryButton onClick={() => setType(null)}>Back</SecondaryButton>
         </div>
       )}
     </BottomSheet>
