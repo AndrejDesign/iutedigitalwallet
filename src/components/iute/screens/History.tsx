@@ -5,7 +5,7 @@ import { Skeleton } from "../ui";
 import { TRANSACTIONS } from "../mockData";
 import type { Txn } from "../types";
 
-const FILTERS = ["All", "Sent", "Received", "Swaps", "BNPL", "Card Payments", "Squad Splits"] as const;
+const FILTERS = ["All", "Sent", "Received", "Top-Up", "Swaps", "BNPL", "Card Payments", "Squad Splits"] as const;
 type Filter = typeof FILTERS[number];
 
 export function History() {
@@ -25,7 +25,8 @@ export function History() {
       switch (filter) {
         case "All": return true;
         case "Sent": return t.amount < 0;
-        case "Received": return t.amount > 0;
+        case "Received": return t.amount > 0 && t.method !== "Top-Up";
+        case "Top-Up": return t.method === "Top-Up";
         case "Swaps": return t.method === "Swap";
         case "BNPL": return t.method === "BNPL";
         case "Card Payments": return t.method === "Card";
@@ -57,7 +58,7 @@ export function History() {
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search transactions..." className="flex-1 bg-transparent text-sm font-bold text-[var(--iute-text)] outline-none placeholder:text-[var(--iute-text-soft)]" />
       </div>
 
-      <div className="mt-3 grid grid-cols-4 gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button
             key={f}
