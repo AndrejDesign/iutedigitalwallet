@@ -251,7 +251,7 @@ export function Home() {
               <p className="text-base font-extrabold text-[var(--iute-text)]">🔥 {state.streakDays}-Day Streak with Marko!</p>
               <p className="mt-1 text-xs font-semibold text-[var(--iute-text-soft)]">Keep splitting bills to climb tiers.</p>
             </div>
-            <span className="rounded-lg bg-[var(--iute-red)] px-2 py-1 text-[10px] font-bold uppercase text-white">5% Cashback</span>
+            <span className="rounded-lg bg-[var(--iute-red)] px-2 py-1 text-[10px] font-bold uppercase text-white">+50 iutePoints</span>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/10">
             <div className="h-full rounded-full bg-[var(--iute-red)] transition-all duration-500" style={{ width: `${(state.streakDays / 14) * 100}%` }} />
