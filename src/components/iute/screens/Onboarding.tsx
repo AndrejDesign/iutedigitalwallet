@@ -5,7 +5,7 @@ import { PrimaryButton } from "../ui";
 
 const SLIDES = [
   { bg: "#EBF3FF", title: "Send cash like a DM.", sub: "Tap, scan, done. No IBANs, no waiting.", Icon: Send },
-  { bg: "#FBF1E4", title: "Squad Hub: Split bills, build streaks.", sub: "Turn every coffee run into a cashback streak with your crew.", Icon: Flame },
+  { bg: "#FBF1E4", title: "Squad Hub: Split bills, build streaks.", sub: "Turn every coffee run into an iutePoints streak with your crew.", Icon: Flame },
   { bg: "#F3F3F3", title: "Tap to freeze. Instant peace of mind.", sub: "Lost your card? One tap freezes it in 0.3 seconds.", Icon: MousePointerClick },
 ];
 
