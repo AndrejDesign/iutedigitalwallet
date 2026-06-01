@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Shield, ArrowRight, UserPlus, Search, Check, Send, TrendingUp, Flame, Users, PiggyBank, QrCode, ScanLine } from "lucide-react";
 import { useStore } from "../store";
 import { Card, PrimaryButton, SecondaryButton, BottomSheet, Toggle, Confetti } from "../ui";
-import { LEADERBOARD, CHALLENGES, CONTACTS } from "../mockData";
+import { Shield, ArrowRight, UserPlus, Search, Check, Send, Flame, QrCode, ScanLine, Gift } from "lucide-react";
+import { LEADERBOARD, CHALLENGES, CONTACTS, PARTNER_VOUCHERS } from "../mockData";
 
 type Buddy = { rank: number; name: string; days: number; color: string };
 
@@ -46,10 +46,13 @@ export function Squad() {
   const friendAvgDays = friends.length ? Math.round(friends.reduce((s, u) => s + u.days, 0) / friends.length) : 0;
   const myRank = me.rank;
   const beats = friends.filter((u) => me.days >= u.days).length;
-  const myPts = state.iutePoints;
-  const friendAvgPts = 980;
-  const mySplits = 12;
-  const friendAvgSplits = 7;
+  const rewards = PARTNER_VOUCHERS.slice(0, 4);
+
+  function buyVoucher(v: { id: string; name: string; cost: number }) {
+    if (state.iutePoints < v.cost) { toast("Not enough iutePoints"); return; }
+    dispatch({ type: "SET_POINTS", points: state.iutePoints - v.cost });
+    toast(`✓ ${v.name} unlocked`);
+  }
 
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % CHALLENGES.length), 4000);
@@ -182,44 +185,34 @@ export function Squad() {
         </div>
       </Card>
 
-      {/* Compared to Friends bento */}
-      <h3 className="mt-5 mb-2 px-1 text-base font-extrabold text-[var(--iute-text)]">You vs. Squad</h3>
+      {/* iute Point Rewards */}
+      <div className="mt-5 mb-2 flex items-center justify-between px-1">
+        <h3 className="text-base font-extrabold text-[var(--iute-text)]">iute Point Rewards</h3>
+        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--iute-text-soft)]">
+          <Gift size={13} /> Spend your iutePoints
+        </span>
+      </div>
       <div className="grid grid-cols-2 gap-3">
-        <BentoStat
-          Icon={Flame}
-          color="#D8252C"
-          label="Streak"
-          mine={`${state.streakDays}d`}
-          friend={`${friendAvgDays}d avg`}
-          delta={state.streakDays - friendAvgDays}
-          unit="d"
-        />
-        <BentoStat
-          Icon={TrendingUp}
-          color="#5A0917"
-          label="Squad Rank"
-          mine={`#${myRank}`}
-          friend={`of ${board.length}`}
-          delta={friends.length - (myRank - 1) - beats * 0}
-          custom={`Beats ${beats}/${friends.length}`}
-        />
-        <BentoStat
-          Icon={PiggyBank}
-          color="#C9A84C"
-          label="iutePoints"
-          mine={myPts.toLocaleString()}
-          friend={`${friendAvgPts.toLocaleString()} avg`}
-          delta={myPts - friendAvgPts}
-          unit="pts"
-        />
-        <BentoStat
-          Icon={Users}
-          color="#2D2D2D"
-          label="Splits / mo"
-          mine={String(mySplits)}
-          friend={`${friendAvgSplits} avg`}
-          delta={mySplits - friendAvgSplits}
-        />
+        {rewards.map((v) => {
+          const can = state.iutePoints >= v.cost;
+          return (
+            <div key={v.id} className="relative overflow-hidden rounded-2xl bg-[var(--iute-surface)] p-3 shadow-sm ring-1 ring-[var(--iute-divider)]" style={{ borderTop: "3px solid var(--iute-red)" }}>
+              <div className="flex items-start justify-between">
+                <span className="text-2xl">{v.emoji}</span>
+                <span className="rounded-full bg-[var(--iute-parchment)] px-2 py-0.5 font-mono text-[10px] font-extrabold text-[var(--iute-black)]">{v.cost} pts</span>
+              </div>
+              <p className="mt-2 text-sm font-extrabold leading-tight text-[var(--iute-text)]">{v.name}</p>
+              <p className="text-[11px] font-medium text-[var(--iute-text-soft)]">{v.partner}</p>
+              <button
+                onClick={() => buyVoucher(v)}
+                disabled={!can}
+                className="tap mt-3 h-9 w-full rounded-xl bg-[var(--iute-red)] text-[12px] font-extrabold text-white disabled:opacity-40"
+              >
+                {can ? "Redeem" : "Locked"}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <BottomSheet open={open} onClose={() => setOpen(false)} title={step === "scan" ? "Scan Bill QR" : "Split a Bill"}>
@@ -319,7 +312,7 @@ export function Squad() {
           </div>
           {partner && (
             <div className="rounded-2xl bg-[var(--iute-parchment)] p-3 text-sm font-bold text-[var(--iute-merlot)]">
-              🎁 iutePlus Cashback Boost active at partner venues!
+              🎁 Bonus iutePoints active at partner venues!
             </div>
           )}
           <PrimaryButton onClick={extendStreak}>Confirm & Send Requests</PrimaryButton>
@@ -333,7 +326,7 @@ export function Squad() {
           <div className="text-center">
             <p className="text-3xl">🎉</p>
             <p className="mt-2 text-lg font-extrabold text-[var(--iute-text)]">{state.streakDays}-Day Streak!</p>
-            <p className="text-sm font-medium text-[var(--iute-text-soft)]">Cashback upgraded to 10%</p>
+            <p className="text-sm font-medium text-[var(--iute-text-soft)]">Earning 2× iutePoints unlocked</p>
           </div>
           <PrimaryButton onClick={() => setCelebrate(false)} className="mt-6">Nice 🔥</PrimaryButton>
         </div>
