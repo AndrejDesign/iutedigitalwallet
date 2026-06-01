@@ -105,7 +105,7 @@ export function Register() {
   }
 
   return (
-    <div className="h-full bg-[var(--iute-bg)] px-6 pb-6 pt-8">
+    <div className="h-full bg-[var(--iute-bg)] px-6 pb-6 pt-24">
       <h1 className="text-2xl font-extrabold text-[var(--iute-text)]">Create your wallet</h1>
       <p className="mt-1 text-sm font-medium text-[var(--iute-text-soft)]">Takes under 60 seconds.</p>
 

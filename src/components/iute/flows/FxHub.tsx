@@ -22,6 +22,7 @@ export function FxHub() {
     setSpin(true);
     setTimeout(() => setSpin(false), 400);
     setFrom(to); setTo(from);
+    setAmt("0");
   }
 
   return (

@@ -18,12 +18,12 @@ export function Squad() {
   const { state, dispatch, toast } = useStore();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("1200");
-  const [size, setSize] = useState(4);
   const [equal, setEqual] = useState(true);
   const [partner, setPartner] = useState(true);
   const [slide, setSlide] = useState(0);
   const [celebrate, setCelebrate] = useState(false);
-  const [custom, setCustom] = useState<string[]>(Array(10).fill(""));
+  const [selected, setSelected] = useState<string[]>(CONTACTS.slice(0, 3).map((c) => c.id));
+  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
   const [buddyOpen, setBuddyOpen] = useState(false);
   const [extraBuddies, setExtraBuddies] = useState<Buddy[]>([]);
 
@@ -54,7 +54,12 @@ export function Squad() {
     return () => clearInterval(t);
   }, []);
 
-  const perPerson = ((+amount || 0) / size).toFixed(2);
+  const size = selected.length + 1; // include you
+  const perPerson = size > 0 ? ((+amount || 0) / size).toFixed(2) : "0";
+
+  function toggleContact(id: string) {
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   function buyFreeze() {
     if (state.iutePoints < 200) { toast("Not enough points"); return; }
@@ -201,25 +206,57 @@ export function Squad() {
             <input value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))} className="h-12 w-full rounded-2xl bg-[var(--iute-fog)] px-4 font-mono text-lg font-extrabold text-[var(--iute-text)] outline-none" />
           </label>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase text-[var(--iute-text-soft)]">Splitting with {size} friends</p>
-            <input type="range" min={2} max={10} value={size} onChange={(e) => setSize(+e.target.value)} className="w-full accent-[var(--iute-red)]" />
-            <p className="mt-1 text-sm font-bold text-[var(--iute-text)]">≈ {perPerson} ден each</p>
+            <p className="mb-2 text-xs font-bold uppercase text-[var(--iute-text-soft)]">
+              Select friends ({selected.length} selected)
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {CONTACTS.map((c) => {
+                const on = selected.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => toggleContact(c.id)}
+                    className={`tap flex items-center gap-2 rounded-2xl p-2 pr-3 text-left ring-1 transition ${
+                      on ? "bg-[var(--iute-red)]/10 ring-[var(--iute-red)]" : "bg-[var(--iute-fog)] ring-transparent"
+                    }`}
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-extrabold text-white" style={{ background: c.color }}>
+                      {c.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
+                    </span>
+                    <span className="flex-1 truncate text-xs font-extrabold text-[var(--iute-text)]">{c.name}</span>
+                    {on && <Check size={14} strokeWidth={3} className="text-[var(--iute-red)]" />}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-sm font-bold text-[var(--iute-text)]">≈ {perPerson} ден each (incl. you)</p>
           </div>
           <div className="flex items-center justify-between rounded-2xl bg-[var(--iute-fog)] p-3">
             <span className="text-sm font-bold text-[var(--iute-text)]">{equal ? "Equal Split" : "Custom Split"}</span>
             <Toggle on={!equal} onChange={(v) => setEqual(!v)} />
           </div>
-          {!equal && (
-            <div className="grid grid-cols-2 gap-2">
-              {Array.from({ length: size }).map((_, i) => (
-                <input
-                  key={i}
-                  placeholder={`Person ${i + 1}`}
-                  value={custom[i] || ""}
-                  onChange={(e) => { const n = [...custom]; n[i] = e.target.value; setCustom(n); }}
-                  className="h-11 rounded-xl bg-[var(--iute-fog)] px-3 font-mono text-sm text-[var(--iute-text)] outline-none"
-                />
-              ))}
+          {!equal && selected.length > 0 && (
+            <div className="space-y-2">
+              {selected.map((id) => {
+                const c = CONTACTS.find((x) => x.id === id);
+                if (!c) return null;
+                return (
+                  <div key={id} className="flex items-center gap-2 rounded-2xl bg-[var(--iute-fog)] p-2 pr-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-extrabold text-white" style={{ background: c.color }}>
+                      {c.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
+                    </span>
+                    <span className="flex-1 text-xs font-extrabold text-[var(--iute-text)]">{c.name}</span>
+                    <input
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={customAmounts[id] || ""}
+                      onChange={(e) => setCustomAmounts({ ...customAmounts, [id]: e.target.value.replace(/[^\d.]/g, "") })}
+                      className="h-9 w-24 rounded-xl bg-white px-2 text-right font-mono text-sm font-bold text-[var(--iute-text)] outline-none focus:ring-2 focus:ring-[var(--iute-red)]"
+                    />
+                    <span className="text-[10px] font-bold text-[var(--iute-text-soft)]">ден</span>
+                  </div>
+                );
+              })}
             </div>
           )}
           <div className="flex items-center justify-between rounded-2xl bg-[var(--iute-fog)] p-3">
