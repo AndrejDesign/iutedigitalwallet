@@ -52,7 +52,7 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
       ) : !mode ? (
         <div className="space-y-3">
           <p className="text-xs font-bold text-[var(--iute-text-soft)]">Available: {state.iutePoints.toLocaleString()} pts</p>
-          <RewardCard Icon={TrendingUp} title="Cashback Booster" sub="Convert points directly into wallet cash" color="var(--iute-red)" onClick={() => setMode("cashback")} />
+          <RewardCard Icon={TrendingUp} title="iutePoints Wallet Top-Up" sub="Convert iutePoints directly into wallet cash" color="var(--iute-red)" onClick={() => setMode("cashback")} />
           <RewardCard Icon={Ticket} title="Partner Vouchers" sub="Get discount codes for Skopje Coffee Lab & local cinemas" color="#0066B3" onClick={() => setMode("voucher")} />
         </div>
       ) : mode === "cashback" ? (
