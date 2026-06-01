@@ -39,7 +39,7 @@ function Shell() {
       </div>
       {showNav && <BottomNav />}
       {state.toast && (
-        <div className="toast-in pointer-events-none fixed left-1/2 top-6 z-[100] -translate-x-1/2 rounded-lg bg-[var(--iute-red)] px-4 py-3 text-sm font-bold text-white shadow-2xl">
+        <div className="toast-in pointer-events-none absolute left-1/2 top-6 z-[100] -translate-x-1/2 rounded-lg bg-[var(--iute-red)] px-4 py-3 text-sm font-bold text-white shadow-2xl">
           {state.toast}
         </div>
       )}

@@ -17,12 +17,12 @@ const SUGGESTIONS = [
 export function Squad() {
   const { state, dispatch, toast } = useStore();
   const [open, setOpen] = useState(false);
-  const [amount, setAmount] = useState("1200");
+  const [amount, setAmount] = useState("0");
   const [equal, setEqual] = useState(true);
   const [partner, setPartner] = useState(true);
   const [slide, setSlide] = useState(0);
   const [celebrate, setCelebrate] = useState(false);
-  const [selected, setSelected] = useState<string[]>(CONTACTS.slice(0, 3).map((c) => c.id));
+  const [selected, setSelected] = useState<string[]>([]);
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
   const [buddyOpen, setBuddyOpen] = useState(false);
   const [extraBuddies, setExtraBuddies] = useState<Buddy[]>([]);
