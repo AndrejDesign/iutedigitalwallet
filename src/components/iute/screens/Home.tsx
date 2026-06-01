@@ -33,9 +33,7 @@ export function Home() {
   const mkdToEur = (state.balanceMKD / state.rate).toFixed(2);
 
   function toggleSwap() {
-    const n = +swapAmt || 0;
-    const converted = swapDir === "MKD_TO_EUR" ? (n / state.rate).toFixed(2) : (n * state.rate).toFixed(2);
-    setSwapAmt(converted);
+    setSwapAmt("0");
     setSwapDir((d) => (d === "MKD_TO_EUR" ? "EUR_TO_MKD" : "MKD_TO_EUR"));
   }
 
