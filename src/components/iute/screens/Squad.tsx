@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield, ArrowRight, UserPlus, Search, Check, Send, TrendingUp, Flame, Users, PiggyBank } from "lucide-react";
+import { Shield, ArrowRight, UserPlus, Search, Check, Send, TrendingUp, Flame, Users, PiggyBank, QrCode, ScanLine } from "lucide-react";
 import { useStore } from "../store";
 import { Card, PrimaryButton, SecondaryButton, BottomSheet, Toggle, Confetti } from "../ui";
 import { LEADERBOARD, CHALLENGES, CONTACTS } from "../mockData";
@@ -17,6 +17,8 @@ const SUGGESTIONS = [
 export function Squad() {
   const { state, dispatch, toast } = useStore();
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<"scan" | "details">("scan");
+  const [scanning, setScanning] = useState(false);
   const [amount, setAmount] = useState("0");
   const [equal, setEqual] = useState(true);
   const [partner, setPartner] = useState(true);
@@ -74,6 +76,27 @@ export function Squad() {
     toast("✓ Split requests sent");
   }
 
+  function openSplit() {
+    setStep("scan");
+    setScanning(false);
+    setAmount("0");
+    setSelected([]);
+    setCustomAmounts({});
+    setOpen(true);
+  }
+
+  function simulateScan() {
+    setScanning(true);
+    setTimeout(() => {
+      // Random restaurant bill between 600–2400 MKD
+      const fake = 600 + Math.floor(Math.random() * 1800);
+      setAmount(String(fake));
+      setScanning(false);
+      setStep("details");
+      toast("✓ Bill detected");
+    }, 1600);
+  }
+
   function addBuddy(b: { name: string; color: string }) {
     const colors = ["#D8252C", "#5A0917", "#2D2D2D", "#C9A84C", "#0F3460", "#4A6741"];
     const next: Buddy = {
@@ -110,7 +133,7 @@ export function Squad() {
           <p className="mt-1 text-xl font-extrabold text-[var(--iute-text)]">Split a Bill</p>
           <p className="mt-1 text-xs font-medium text-[var(--iute-text-soft)]">Send fair share requests in seconds.</p>
           <div className="mt-3">
-            <PrimaryButton onClick={() => setOpen(true)}>
+            <PrimaryButton onClick={openSplit}>
               <span className="inline-flex items-center gap-2">Launch New Split <ArrowRight size={18} /></span>
             </PrimaryButton>
           </div>
@@ -199,7 +222,38 @@ export function Squad() {
         />
       </div>
 
-      <BottomSheet open={open} onClose={() => setOpen(false)} title="Split a Bill">
+      <BottomSheet open={open} onClose={() => setOpen(false)} title={step === "scan" ? "Scan Bill QR" : "Split a Bill"}>
+        {step === "scan" ? (
+          <div className="space-y-4">
+            <p className="text-sm font-medium text-[var(--iute-text-soft)]">
+              Point your camera at the QR code on your bill to auto-import the amount.
+            </p>
+            <div className="relative mx-auto flex aspect-square w-full max-w-[260px] items-center justify-center overflow-hidden rounded-3xl bg-[var(--iute-black)]">
+              <QrCode size={140} className="text-white/85" strokeWidth={1.25} />
+              {/* corner frames */}
+              <span className="absolute left-3 top-3 h-6 w-6 rounded-tl-lg border-l-4 border-t-4 border-[var(--iute-red)]" />
+              <span className="absolute right-3 top-3 h-6 w-6 rounded-tr-lg border-r-4 border-t-4 border-[var(--iute-red)]" />
+              <span className="absolute bottom-3 left-3 h-6 w-6 rounded-bl-lg border-b-4 border-l-4 border-[var(--iute-red)]" />
+              <span className="absolute bottom-3 right-3 h-6 w-6 rounded-br-lg border-b-4 border-r-4 border-[var(--iute-red)]" />
+              {/* scanning line */}
+              <span
+                className={`pointer-events-none absolute inset-x-6 h-[3px] rounded-full bg-[var(--iute-red)] shadow-[0_0_18px_var(--iute-red)] ${scanning ? "animate-[squad-scan_1.4s_ease-in-out_infinite]" : "top-1/2 opacity-60"}`}
+              />
+              <style>{`@keyframes squad-scan { 0%{top:12%;opacity:.4} 50%{top:88%;opacity:1} 100%{top:12%;opacity:.4} }`}</style>
+            </div>
+            <PrimaryButton onClick={simulateScan} disabled={scanning}>
+              <span className="inline-flex items-center gap-2">
+                <ScanLine size={18} /> {scanning ? "Scanning…" : "Scan QR Code"}
+              </span>
+            </PrimaryButton>
+            <button
+              onClick={() => { setAmount("0"); setStep("details"); }}
+              className="tap mx-auto block text-xs font-bold text-[var(--iute-text-soft)] underline"
+            >
+              Enter amount manually
+            </button>
+          </div>
+        ) : (
         <div className="space-y-4">
           <label className="block">
             <span className="mb-1 block text-xs font-bold uppercase text-[var(--iute-text-soft)]">Amount (MKD)</span>
@@ -270,6 +324,7 @@ export function Squad() {
           )}
           <PrimaryButton onClick={extendStreak}>Confirm & Send Requests</PrimaryButton>
         </div>
+        )}
       </BottomSheet>
 
       <BottomSheet open={celebrate} onClose={() => setCelebrate(false)} title="Milestone unlocked!">
