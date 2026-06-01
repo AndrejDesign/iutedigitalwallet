@@ -55,7 +55,7 @@ export function TxDetail() {
 
       {t.squad && (
         <div className="mt-4 rounded-3xl bg-[var(--iute-parchment)] p-4 text-sm font-bold text-[var(--iute-merlot)]">
-          <span className={`inline-block transition-transform ${pulse ? "haptic-pulse" : ""}`}>🔥</span> Streak with {t.name.split(" ")[0]} extended to {state.streakDays + 1} Days! 5% cashback auto-applied.
+          <span className={`inline-block transition-transform ${pulse ? "haptic-pulse" : ""}`}>🔥</span> Streak with {t.name.split(" ")[0]} extended to {state.streakDays + 1} Days! +50 iutePoints auto-applied.
         </div>
       )}
 
