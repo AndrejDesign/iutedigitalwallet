@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, Ticket, Check } from "lucide-react";
+import { TrendingUp, Ticket, Check, ShieldCheck } from "lucide-react";
 import { useStore, fmtMKD } from "../store";
 import { BottomSheet, PrimaryButton, SecondaryButton, Confetti } from "../ui";
 import { PARTNER_VOUCHERS } from "../mockData";
@@ -12,15 +12,16 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
   const [points, setPoints] = useState(500);
   const [voucher, setVoucher] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
-    if (open) { setMode(null); setPoints(Math.min(500, state.iutePoints)); setVoucher(null); setSuccess(false); }
+    if (open) { setMode(null); setPoints(Math.min(500, state.iutePoints)); setVoucher(null); setSuccess(false); setVerifying(false); }
   }, [open, state.iutePoints]);
 
   const cash = Math.floor(points / 10);
   const selectedVoucher = PARTNER_VOUCHERS.find(v => v.id === voucher);
 
-  function confirm() {
+  function doRedeem() {
     if (mode === "cashback") {
       if (points <= 0 || points > state.iutePoints) return;
       dispatch({ type: "SET_POINTS", points: state.iutePoints - points });
@@ -49,11 +50,44 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
           <p className="mt-4 text-lg font-extrabold text-[var(--iute-text)]">Redemption Confirmed</p>
           <p className="mt-1 text-xs font-medium text-[var(--iute-text-soft)]">Balance updated instantly</p>
         </div>
+      ) : verifying ? (
+        <div className="flex flex-col items-center space-y-5 py-4">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
+            <ShieldCheck size={40} strokeWidth={2.5} />
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-extrabold text-[var(--iute-text)]">Verified Redeem</p>
+            <p className="mt-1 text-xs font-medium text-[var(--iute-text-soft)]">Review your reward details below before completing</p>
+          </div>
+          <div className="w-full rounded-2xl bg-[var(--iute-parchment)] p-4 text-center dark:bg-[var(--iute-merlot)]">
+            {mode === "cashback" ? (
+              <>
+                <p className="font-mono text-2xl font-extrabold text-[var(--iute-text)]">
+                  {points.toLocaleString()} pts → {cash.toLocaleString()} ден
+                </p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-[var(--iute-text-soft)]">Cost: {points.toLocaleString()} pts</p>
+              </>
+            ) : selectedVoucher ? (
+              <>
+                <span className="text-3xl">{selectedVoucher.emoji}</span>
+                <p className="mt-1 font-mono text-xl font-extrabold text-[var(--iute-text)]">{selectedVoucher.name}</p>
+                <p className="text-xs font-medium text-[var(--iute-text-soft)]">{selectedVoucher.partner}</p>
+                <p className="mt-2 font-mono text-sm font-extrabold text-[var(--iute-red)]">Cost: {selectedVoucher.cost.toLocaleString()} pts</p>
+              </>
+            ) : null}
+          </div>
+          <button onClick={doRedeem} className="tap h-14 w-full rounded-3xl bg-emerald-500 text-base font-extrabold text-white shadow-md">
+            Complete Verified Redeem
+          </button>
+          <button onClick={() => setVerifying(false)} className="tap text-xs font-bold text-[var(--iute-text-soft)] underline">
+            Go back
+          </button>
+        </div>
       ) : !mode ? (
         <div className="space-y-3">
           <p className="text-xs font-bold text-[var(--iute-text-soft)]">Available: {state.iutePoints.toLocaleString()} pts</p>
-          <RewardCard Icon={TrendingUp} title="iutePoints Wallet Top-Up" sub="Convert iutePoints directly into wallet cash" color="var(--iute-red)" onClick={() => setMode("cashback")} />
-          <RewardCard Icon={Ticket} title="Partner Vouchers" sub="Get discount codes for Skopje Coffee Lab & local cinemas" color="#0066B3" onClick={() => setMode("voucher")} />
+          <RewardCard Icon={TrendingUp} title="iutePoints Wallet Top-Up" sub="Convert iutePoints directly into wallet cash" cost="10 pts = 1 MKD" color="var(--iute-red)" onClick={() => setMode("cashback")} />
+          <RewardCard Icon={Ticket} title="Partner Vouchers" sub="Get discount codes for Skopje Coffee Lab & local cinemas" cost={`${Math.min(...PARTNER_VOUCHERS.map(v => v.cost))} – ${Math.max(...PARTNER_VOUCHERS.map(v => v.cost))} pts`} color="#0066B3" onClick={() => setMode("voucher")} />
         </div>
       ) : mode === "cashback" ? (
         <div className="space-y-4">
@@ -75,7 +109,7 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
           <p className="text-xs font-medium text-[var(--iute-text-soft)]">
             New balance after redemption: <span className="font-bold text-[var(--iute-text)]">{fmtMKD(state.balanceMKD + cash)}</span>
           </p>
-          <button onClick={confirm} disabled={!canConfirm} className="tap h-14 w-full rounded-3xl bg-[var(--iute-red)] text-base font-extrabold text-white disabled:opacity-40">
+          <button onClick={() => setVerifying(true)} disabled={!canConfirm} className="tap h-14 w-full rounded-3xl bg-[var(--iute-red)] text-base font-extrabold text-white disabled:opacity-40">
             Confirm Redemption
           </button>
           <SecondaryButton onClick={() => setMode(null)}>Back</SecondaryButton>
@@ -103,7 +137,7 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
               })}
             </div>
           </div>
-          <button onClick={confirm} disabled={!canConfirm} className="tap h-14 w-full rounded-3xl bg-[var(--iute-red)] text-base font-extrabold text-white disabled:opacity-40">
+          <button onClick={() => setVerifying(true)} disabled={!canConfirm} className="tap h-14 w-full rounded-3xl bg-[var(--iute-red)] text-base font-extrabold text-white disabled:opacity-40">
             Confirm Redemption
           </button>
           <SecondaryButton onClick={() => setMode(null)}>Back</SecondaryButton>
@@ -113,7 +147,7 @@ export function RedeemSheet({ open, onClose }: { open: boolean; onClose: () => v
   );
 }
 
-function RewardCard({ Icon, title, sub, color, onClick }: { Icon: typeof TrendingUp; title: string; sub: string; color: string; onClick: () => void }) {
+function RewardCard({ Icon, title, sub, cost, color, onClick }: { Icon: typeof TrendingUp; title: string; sub: string; cost: string; color: string; onClick: () => void }) {
   return (
     <button onClick={onClick} className="tap flex w-full items-center gap-3 rounded-2xl border-2 border-transparent bg-[var(--iute-fog)] p-4 text-left hover:border-[var(--iute-red)]">
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: `${color}22`, color }}>
@@ -122,6 +156,7 @@ function RewardCard({ Icon, title, sub, color, onClick }: { Icon: typeof Trendin
       <div className="flex-1">
         <p className="text-sm font-extrabold text-[var(--iute-text)]">{title}</p>
         <p className="text-[11px] font-medium text-[var(--iute-text-soft)]">{sub}</p>
+        <p className="mt-0.5 font-mono text-[10px] font-extrabold text-[var(--iute-red)]">{cost}</p>
       </div>
     </button>
   );
