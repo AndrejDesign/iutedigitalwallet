@@ -41,7 +41,7 @@ const initial: AppState = {
   toast: null,
   notifications: [
     { id: "n1", icon: "money",  title: "Marko paid you 350 ден",  body: "Split: Pizza night 🍕",      when: "2m ago",  read: false },
-    { id: "n2", icon: "squad",  title: "Streak unlocked — 7 days", body: "5% cashback active today.",  when: "1h ago",  read: false },
+    { id: "n2", icon: "squad",  title: "Streak unlocked — 7 days", body: "Earning 2× iutePoints today.",  when: "1h ago",  read: false },
     { id: "n3", icon: "card",   title: "Card payment approved",    body: "Skopje Coffee Lab · 280 ден", when: "3h ago", read: false },
     { id: "n4", icon: "promo",  title: "1,450 iutePlus points",    body: "You can redeem rewards now.", when: "Yesterday", read: true  },
     { id: "n5", icon: "alert",  title: "New login from Skopje",    body: "iPhone · Today 09:14",        when: "Yesterday", read: true  },
