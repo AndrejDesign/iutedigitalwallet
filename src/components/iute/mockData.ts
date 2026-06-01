@@ -27,9 +27,9 @@ export const LEADERBOARD = [
 ];
 
 export const CHALLENGES = [
-  "🔥 Buddy Challenge: Split 3 coffees this weekend → 15% cashback!",
+  "🔥 Buddy Challenge: Split 3 coffees this weekend → +150 iutePoints!",
   "💸 Refer a friend → Earn 500 iutePlus pts each!",
-  "🏆 Top splitter this week gets double cashback!",
+  "🏆 Top splitter this week earns 2× iutePoints!",
 ];
 
 export interface Contact { id: string; name: string; phone: string; color: string; flag: string; currency: "MKD" | "EUR" | "USD" | "GBP" | "CHF" }
@@ -65,7 +65,7 @@ export const FX_RATES: Record<FxCode, number> = {
 export const CARD_INSIGHTS = [
   { title: "iute Insight", body: "You spend 34% more on weekends. Setting a weekend daily limit of 2,000 ден could save you ≈1,400 ден/month.", cta: "Set Weekend Limit" },
   { title: "iute Insight", body: "You haven't used this card in 7 days. Freeze it to stay safe?", cta: "Freeze Card" },
-  { title: "iute Insight", body: "You're 1,200 ден away from unlocking 7% cashback tier this month.", cta: "View Tiers" },
+  { title: "iute Insight", body: "You're 1,200 ден away from unlocking the next iutePoints tier this month.", cta: "View Tiers" },
 ];
 
 export const CARD_CATEGORIES = [
